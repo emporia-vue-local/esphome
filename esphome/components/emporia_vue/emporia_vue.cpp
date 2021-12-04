@@ -28,16 +28,18 @@ void EmporiaVueComponent::dump_config() {
         wire = "BLUE";
         break;
     }
-    ESP_LOGCONFIG(TAG, "  Phase Config");
+    ESP_LOGCONFIG(TAG, "  Phase");
     ESP_LOGCONFIG(TAG, "    Wire: %s", wire.c_str());
     ESP_LOGCONFIG(TAG, "    Calibration: %f", phase->get_calibration());
     LOG_SENSOR("    ", "Voltage", phase->get_voltage_sensor());
   }
 
-  for (auto *ct_sensor : this->ct_sensors_) {
-    LOG_SENSOR("  ", "CT", ct_sensor);
-    ESP_LOGCONFIG(TAG, "    Phase Calibration: %f", ct_sensor->get_phase()->get_calibration());
-    ESP_LOGCONFIG(TAG, "    CT Port Index: %d", ct_sensor->get_input_port());
+  for (auto *ct_clamp : this->ct_clamps_) {
+    ESP_LOGCONFIG(TAG, "  CT Clamp");
+    ESP_LOGCONFIG(TAG, "    Phase Calibration: %f", ct_clamp->get_phase()->get_calibration());
+    ESP_LOGCONFIG(TAG, "    CT Port Index: %d", ct_clamp->get_input_port());
+    LOG_SENSOR("    ", "Power", ct_clamp->get_power_sensor());
+    LOG_SENSOR("    ", "Current", ct_clamp->get_current_sensor());
   }
 }
 
@@ -109,12 +111,12 @@ void EmporiaVueComponent::loop() {
 
   if (xQueueReceive(this->i2c_data_queue_, &sensor_reading, 0) == pdTRUE) {
     ESP_LOGV(TAG, "Received sensor reading with sequence number %d from queue", sensor_reading.sequence_num);
-    for (PhaseConfig *phase : this->phases_) {
+    for (auto *phase : this->phases_) {
       phase->update_from_reading(sensor_reading);
     }
 
-    for (CTSensor *ct_sensor : this->ct_sensors_) {
-      ct_sensor->update_from_reading(sensor_reading);
+    for (auto *ct_clamp : this->ct_clamps_) {
+      ct_clamp->update_from_reading(sensor_reading);
     }
   }
 }
@@ -140,14 +142,21 @@ int32_t PhaseConfig::extract_power_for_phase(const ReadingPowerEntry &power_entr
   }
 }
 
-void CTSensor::update_from_reading(const SensorReading &sensor_reading) {
-  ReadingPowerEntry power_entry = sensor_reading.power[this->input_port_];
-  int32_t raw_power = this->phase_->extract_power_for_phase(power_entry);
-  float calibrated_power = this->get_calibrated_power(raw_power);
-  this->publish_state(calibrated_power);
+void CTClampConfig::update_from_reading(const SensorReading &sensor_reading) {
+  if (this->power_sensor_) {
+    ReadingPowerEntry power_entry = sensor_reading.power[this->input_port_];
+    int32_t raw_power = this->phase_->extract_power_for_phase(power_entry);
+    float calibrated_power = this->get_calibrated_power(raw_power);
+    this->power_sensor_->publish_state(calibrated_power);
+  }
+  if (this->current_sensor_) {
+    uint16_t raw_current = sensor_reading.current[this->input_port_];
+    // we don't know how this sensor is calibrated by the original firmware
+    this->current_sensor_->publish_state(raw_current);
+  }
 }
 
-float CTSensor::get_calibrated_power(int32_t raw_power) const {
+float CTClampConfig::get_calibrated_power(int32_t raw_power) const {
   float calibration = this->phase_->get_calibration();
 
   float correction_factor = (this->input_port_ < 3) ? 5.5 : 22;
