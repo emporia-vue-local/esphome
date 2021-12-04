@@ -240,12 +240,19 @@ sensor:
         voltage: 
           name: "Phase C Voltage"
     ct_clamps:
-      - name: "A"
-        phase_id: phase_a
+      - phase_id: phase_a
         input: "A"
-      - name: "C"
-        phase_id: phase_c
+        power:
+          name: "A Power"
+        current:
+          name: "A Current"
+      - phase_id: phase_c
         input: "C"
+        power:
+          name: "C Power"
+          filters:
+            - throttle_average: 5s
+            - multiply: 2
 
 script:
   - id: automation_test

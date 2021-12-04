@@ -4,13 +4,17 @@ import esphome.codegen as cg
 from esphome.components.ota import OTAComponent
 from esphome.const import (
     CONF_CALIBRATION,
+    CONF_CURRENT,
     CONF_ID,
     CONF_INPUT,
     CONF_OTA,
+    CONF_POWER,
     CONF_VOLTAGE,
-    DEVICE_CLASS_ENERGY,
+    DEVICE_CLASS_CURRENT,
+    DEVICE_CLASS_POWER,
     DEVICE_CLASS_VOLTAGE,
     STATE_CLASS_MEASUREMENT,
+    UNIT_AMPERE,
     UNIT_WATT,
     UNIT_VOLT,
 )
@@ -30,7 +34,7 @@ EmporiaVueComponent = emporia_vue_ns.class_(
     "EmporiaVueComponent", cg.Component, i2c.I2CDevice
 )
 PhaseConfig = emporia_vue_ns.class_("PhaseConfig")
-CTSensor = emporia_vue_ns.class_("CTSensor", sensor.Sensor)
+CTClampConfig = emporia_vue_ns.class_("CTClampConfig")
 
 PhaseInputWire = emporia_vue_ns.enum("PhaseInputWire")
 PHASE_INPUT = {
@@ -62,17 +66,23 @@ CT_INPUT = {
     "16": CTInputPort.SIXTEEN,
 }
 
-SCHEMA_CT_CLAMP = sensor.sensor_schema(
-    unit_of_measurement=UNIT_WATT,
-    device_class=DEVICE_CLASS_ENERGY,
-    state_class=STATE_CLASS_MEASUREMENT,
-).extend(
-    {
-        cv.GenerateID(): cv.declare_id(CTSensor),
-        cv.Required(CONF_PHASE_ID): cv.use_id(PhaseConfig),
-        cv.Required(CONF_INPUT): cv.enum(CT_INPUT),
-    }
-)
+SCHEMA_CT_CLAMP = {
+    cv.GenerateID(): cv.declare_id(CTClampConfig),
+    cv.Required(CONF_PHASE_ID): cv.use_id(PhaseConfig),
+    cv.Required(CONF_INPUT): cv.enum(CT_INPUT),
+    cv.Optional(CONF_POWER): sensor.sensor_schema(
+        unit_of_measurement=UNIT_WATT,
+        device_class=DEVICE_CLASS_POWER,
+        state_class=STATE_CLASS_MEASUREMENT,
+        accuracy_decimals=1,
+    ),
+    cv.Optional(CONF_CURRENT): sensor.sensor_schema(
+        unit_of_measurement=UNIT_AMPERE,
+        device_class=DEVICE_CLASS_CURRENT,
+        state_class=STATE_CLASS_MEASUREMENT,
+        accuracy_decimals=2,
+    ),
+}
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
@@ -124,17 +134,23 @@ async def to_code(config):
         phases.append(phase_var)
     cg.add(var.set_phases(phases))
 
-    ct_sensors = []
+    ct_clamps = []
     for ct_config in config[CONF_CT_CLAMPS]:
-        power_var = cg.new_Pvariable(ct_config[CONF_ID], CTSensor())
+        ct_clamp_var = cg.new_Pvariable(ct_config[CONF_ID], CTClampConfig())
         phase_var = await cg.get_variable(ct_config[CONF_PHASE_ID])
-        cg.add(power_var.set_phase(phase_var))
-        cg.add(power_var.set_input_port(ct_config[CONF_INPUT]))
+        cg.add(ct_clamp_var.set_phase(phase_var))
+        cg.add(ct_clamp_var.set_input_port(ct_config[CONF_INPUT]))
 
-        await sensor.register_sensor(power_var, ct_config)
+        if CONF_POWER in ct_config:
+            power_sensor = await sensor.new_sensor(ct_config[CONF_POWER])
+            cg.add(ct_clamp_var.set_power_sensor(power_sensor))
 
-        ct_sensors.append(power_var)
-    cg.add(var.set_ct_sensors(ct_sensors))
+        if CONF_CURRENT in ct_config:
+            current_sensor = await sensor.new_sensor(ct_config[CONF_CURRENT])
+            cg.add(ct_clamp_var.set_current_sensor(current_sensor))
+
+        ct_clamps.append(ct_clamp_var)
+    cg.add(var.set_ct_clamps(ct_clamps))
 
     if CONF_OTA in config:
         ota = await cg.get_variable(config[CONF_OTA])
