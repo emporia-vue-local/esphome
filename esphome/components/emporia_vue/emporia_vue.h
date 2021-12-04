@@ -6,17 +6,8 @@
 #include <vector>
 
 #include "esphome/core/component.h"
-#include "esphome/core/defines.h"
 #include "esphome/components/i2c/i2c.h"
 #include "esphome/components/sensor/sensor.h"
-
-#ifdef USING_OTA_COMPONENT
-#include "esphome/components/ota/ota_component.h"
-#endif
-
-#include <freertos/FreeRTOS.h>
-#include <freertos/queue.h>
-#include <freertos/task.h>
 
 namespace esphome {
 namespace emporia_vue {
@@ -55,24 +46,15 @@ class EmporiaVueComponent : public Component, public i2c::I2CDevice {
   uint32_t get_sensor_poll_interval() const { return this->sensor_poll_interval_; }
   void set_phases(std::vector<PhaseConfig *> phases) { this->phases_ = std::move(phases); }
   void set_ct_clamps(std::vector<CTClampConfig *> ct_clamps) { this->ct_clamps_ = std::move(ct_clamps); }
-#ifdef USING_OTA_COMPONENT
-  void set_ota(ota::OTAComponent *ota) { this->ota_ = ota; }
-#endif
 
-  void setup() override;
   void loop() override;
 
  protected:
-  static void i2c_request_task(void *pv);
-
   uint32_t sensor_poll_interval_;
+  uint32_t last_poll_ = 0;
+  uint8_t last_sequence_num_ = 0;
   std::vector<PhaseConfig *> phases_;
   std::vector<CTClampConfig *> ct_clamps_;
-  QueueHandle_t i2c_data_queue_;
-#ifdef USING_OTA_COMPONENT
-  ota::OTAComponent *ota_{nullptr};
-#endif
-  TaskHandle_t i2c_request_task_;
 };
 
 enum PhaseInputWire : uint8_t {
