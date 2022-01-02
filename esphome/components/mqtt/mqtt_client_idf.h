@@ -1,7 +1,7 @@
 #pragma once
 
 ///
-/// Mirror the public interface of AsyncMqttClient using esp-idf
+/// Mirror the public interface of MqttIdfClient using esp-idf
 ///
 
 #ifdef USE_ESP_IDF
@@ -10,18 +10,19 @@
 #include <mqtt_client.h>
 #include "esphome/components/network/ip_address.h"
 #include "esphome/core/helpers.h"
+#include "mqtt_client_base.h"
 
 namespace esphome {
 namespace mqtt {
 
-/// Start Required for compability with AsyncMqttClient inteface as used by esphome
-struct AsyncMqttClientMessageProperties {
+/// Start Required for compability with MqttIdfClient inteface as used by esphome
+struct MqttIdfClientMessageProperties {
   uint8_t qos;
   bool dup;
   bool retain;
 };
 
-enum class AsyncMqttClientDisconnectReason : int8_t {
+enum class MqttIdfClientDisconnectReason : int8_t {
   TCP_DISCONNECTED = 0,
   MQTT_UNACCEPTABLE_PROTOCOL_VERSION = 1,
   MQTT_IDENTIFIER_REJECTED = 2,
@@ -32,89 +33,10 @@ enum class AsyncMqttClientDisconnectReason : int8_t {
   TLS_BAD_FINGERPRINT = 7
 };
 
-class AsyncMqttClient {
+class MqttIdfClient : public MqttClientBase {
  public:
-  using OnConnectUserCallback = std::function<void(bool session_present)>;
-  using OnDisconnectUserCallback = std::function<void(AsyncMqttClientDisconnectReason reason)>;
-  using OnSubscribeUserCallback = std::function<void(uint16_t packet_id, uint8_t qos)>;
-  using OnUnsubscribeUserCallback = std::function<void(uint16_t packet_id)>;
-  using OnMessageUserCallback = std::function<void(
-      char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)>;
-  using OnPublishUserCallback = std::function<void(uint16_t packet_id)>;
   static const size_t MQTT_BUFFER_SIZE = 4096;
 
-  AsyncMqttClient &setKeepAlive(uint16_t keep_alive) {  // NOLINT(readability-identifier-naming)
-    mqtt_cfg_.keepalive = keep_alive;
-    return *this;
-  }
-  AsyncMqttClient &setClientId(const char *client_id) {  // NOLINT(readability-identifier-naming)
-    this->client_id_ = client_id;
-    return *this;
-  }
-  AsyncMqttClient &setCleanSession(bool clean_session) {  // NOLINT(readability-identifier-naming)
-    mqtt_cfg_.disable_clean_session = !clean_session;
-    return *this;
-  }
-  AsyncMqttClient &setMaxTopicLength(uint16_t max_topic_length) {  // NOLINT(readability-identifier-naming)
-    // not required - ignored
-    return *this;
-  }
-  AsyncMqttClient &setCredentials(const char *username,  // NOLINT(readability-identifier-naming)
-                                  const char *password = nullptr) {
-    if (username)
-      this->username_ = username;
-    if (password)
-      this->password_ = password;
-    return *this;
-  }
-  AsyncMqttClient &setWill(const char *topic, uint8_t qos, bool retain,  // NOLINT(readability-identifier-naming)
-                           const char *payload = nullptr, size_t length = 0) {
-    if (topic)
-      this->lwt_topic_ = topic;
-    this->mqtt_cfg_.lwt_qos = qos;
-    if (payload)
-      this->lwt_message_ = payload;
-    this->mqtt_cfg_.lwt_retain = retain;
-    return *this;
-  }
-  AsyncMqttClient &setServer(network::IPAddress ip, uint16_t port) {  // NOLINT(readability-identifier-naming)
-    host_ = ip.str();
-    this->mqtt_cfg_.host = host_.c_str();
-    this->mqtt_cfg_.port = port;
-    return *this;
-  }
-  AsyncMqttClient &setServer(const char *host, uint16_t port) {  // NOLINT(readability-identifier-naming)
-    host_ = host;
-    this->mqtt_cfg_.host = host_.c_str();
-    this->mqtt_cfg_.port = port;
-    return *this;
-  }
-  AsyncMqttClient &onConnect(const OnConnectUserCallback &callback) {  // NOLINT(readability-identifier-naming)
-    this->on_connect_.push_back(callback);
-    return *this;
-  }
-  AsyncMqttClient &onDisconnect(const OnDisconnectUserCallback &callback) {  // NOLINT(readability-identifier-naming)
-    this->on_disconnect_.push_back(callback);
-    return *this;
-  }
-  AsyncMqttClient &onSubscribe(const OnSubscribeUserCallback &callback) {  // NOLINT(readability-identifier-naming)
-    this->on_subscribe_.push_back(callback);
-    return *this;
-  }
-  AsyncMqttClient &onUnsubscribe(const OnUnsubscribeUserCallback &callback) {  // NOLINT(readability-identifier-naming)
-    this->on_unsubscribe_.push_back(callback);
-    return *this;
-  }
-  AsyncMqttClient &onMessage(const OnMessageUserCallback &callback) {  // NOLINT(readability-identifier-naming)
-    this->on_message_.push_back(callback);
-    return *this;
-  }
-  AsyncMqttClient &onPublish(const OnPublishUserCallback &callback) {  // NOLINT(readability-identifier-naming)
-    this->on_publish_.push_back(callback);
-    return *this;
-  }
-
-  bool connected() const { return this->is_connected_; }
   void connect() {
     if (!is_initalized_)
       if (initialize_())
@@ -172,21 +94,8 @@ class AsyncMqttClient {
   bool is_connected_{false};
   bool is_initalized_{false};
   esp_mqtt_client_config_t mqtt_cfg_{};
-  std::string host_;
-  std::string username_;
-  std::string password_;
-  std::string lwt_topic_;
-  std::string lwt_message_;
-  std::string client_id_;
   optional<std::string> ca_certificate_;
   bool skip_cert_cn_check_{false};
-  // callbacks
-  std::vector<OnConnectUserCallback> on_connect_;
-  std::vector<OnDisconnectUserCallback> on_disconnect_;
-  std::vector<OnSubscribeUserCallback> on_subscribe_;
-  std::vector<OnUnsubscribeUserCallback> on_unsubscribe_;
-  std::vector<OnMessageUserCallback> on_message_;
-  std::vector<OnPublishUserCallback> on_publish_;
 };
 
 }  // namespace mqtt

@@ -28,8 +28,8 @@ MQTTClientComponent::MQTTClientComponent() {
 // Connection
 void MQTTClientComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up MQTT...");
-  this->mqtt_client_.onMessage([this](char const *topic, char *payload, AsyncMqttClientMessageProperties properties,
-                                      size_t len, size_t index, size_t total) {
+  this->mqtt_client_.set_on_message([this](const char *topic, char *payload, uint8_t qos, bool dup, bool retain,
+                                           size_t len, size_t index, size_t total) {
     if (index == 0)
       this->payload_buffer_.reserve(total);
 
@@ -42,7 +42,7 @@ void MQTTClientComponent::setup() {
       this->payload_buffer_.clear();
     }
   });
-  this->mqtt_client_.onDisconnect([this](AsyncMqttClientDisconnectReason reason) {
+  this->mqtt_client_.set_on_disconnect([this](MqttClientDisconnectReason reason) {
     this->state_ = MQTT_CLIENT_DISCONNECTED;
     this->disconnect_reason_ = reason;
   });
@@ -176,7 +176,7 @@ void MQTTClientComponent::start_connect_() {
   // Force disconnect first
   this->mqtt_client_.disconnect(true);
 
-  this->mqtt_client_.setClientId(this->credentials_.client_id.c_str());
+  this->mqtt_client_.set_client_id(this->credentials_.client_id.c_str());
   const char *username = nullptr;
   if (!this->credentials_.username.empty())
     username = this->credentials_.username.c_str();
@@ -184,12 +184,12 @@ void MQTTClientComponent::start_connect_() {
   if (!this->credentials_.password.empty())
     password = this->credentials_.password.c_str();
 
-  this->mqtt_client_.setCredentials(username, password);
+  this->mqtt_client_.set_credentials(username, password);
 
-  this->mqtt_client_.setServer((uint32_t) this->ip_, this->credentials_.port);
+  this->mqtt_client_.set_server((uint32_t) this->ip_, this->credentials_.port);
   if (!this->last_will_.topic.empty()) {
-    this->mqtt_client_.setWill(this->last_will_.topic.c_str(), this->last_will_.qos, this->last_will_.retain,
-                               this->last_will_.payload.c_str(), this->last_will_.payload.length());
+    this->mqtt_client_.set_will(this->last_will_.topic.c_str(), this->last_will_.qos, this->last_will_.retain,
+                                this->last_will_.payload.c_str(), this->last_will_.payload.length());
   }
 
   this->mqtt_client_.connect();
@@ -226,28 +226,28 @@ void MQTTClientComponent::loop() {
   if (this->disconnect_reason_.has_value()) {
     const LogString *reason_s;
     switch (*this->disconnect_reason_) {
-      case AsyncMqttClientDisconnectReason::TCP_DISCONNECTED:
+      case MqttClientDisconnectReason::TCP_DISCONNECTED:
         reason_s = LOG_STR("TCP disconnected");
         break;
-      case AsyncMqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION:
+      case MqttClientDisconnectReason::MQTT_UNACCEPTABLE_PROTOCOL_VERSION:
         reason_s = LOG_STR("Unacceptable Protocol Version");
         break;
-      case AsyncMqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED:
+      case MqttClientDisconnectReason::MQTT_IDENTIFIER_REJECTED:
         reason_s = LOG_STR("Identifier Rejected");
         break;
-      case AsyncMqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE:
+      case MqttClientDisconnectReason::MQTT_SERVER_UNAVAILABLE:
         reason_s = LOG_STR("Server Unavailable");
         break;
-      case AsyncMqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS:
+      case MqttClientDisconnectReason::MQTT_MALFORMED_CREDENTIALS:
         reason_s = LOG_STR("Malformed Credentials");
         break;
-      case AsyncMqttClientDisconnectReason::MQTT_NOT_AUTHORIZED:
+      case MqttClientDisconnectReason::MQTT_NOT_AUTHORIZED:
         reason_s = LOG_STR("Not Authorized");
         break;
-      case AsyncMqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE:
+      case MqttClientDisconnectReason::ESP8266_NOT_ENOUGH_SPACE:
         reason_s = LOG_STR("Not Enough Space");
         break;
-      case AsyncMqttClientDisconnectReason::TLS_BAD_FINGERPRINT:
+      case MqttClientDisconnectReason::TLS_BAD_FINGERPRINT:
         reason_s = LOG_STR("TLS Bad Fingerprint");
         break;
       default:
@@ -498,7 +498,7 @@ bool MQTTClientComponent::is_log_message_enabled() const { return !this->log_mes
 void MQTTClientComponent::set_reboot_timeout(uint32_t reboot_timeout) { this->reboot_timeout_ = reboot_timeout; }
 void MQTTClientComponent::register_mqtt_component(MQTTComponent *component) { this->children_.push_back(component); }
 void MQTTClientComponent::set_log_level(int level) { this->log_level_ = level; }
-void MQTTClientComponent::set_keep_alive(uint16_t keep_alive_s) { this->mqtt_client_.setKeepAlive(keep_alive_s); }
+void MQTTClientComponent::set_keep_alive(uint16_t keep_alive_s) { this->mqtt_client_.set_keep_alive(keep_alive_s); }
 void MQTTClientComponent::set_log_message_template(MQTTMessage &&message) { this->log_message_ = std::move(message); }
 const MQTTDiscoveryInfo &MQTTClientComponent::get_discovery_info() const { return this->discovery_info_; }
 void MQTTClientComponent::set_topic_prefix(std::string topic_prefix) { this->topic_prefix_ = std::move(topic_prefix); }

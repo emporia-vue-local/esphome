@@ -1,5 +1,5 @@
 ///
-/// Mirror the public interface of AsyncMqttClient using esp-idf
+/// Mirror the public interface of MqttIdfClient using esp-idf
 ///
 #ifdef USE_ESP_IDF
 #include <string>
@@ -12,12 +12,16 @@ namespace esphome {
 namespace mqtt {
 static const char *const TAG = "mqtt.idf";
 
-bool AsyncMqttClient::initialize_() {
+bool MqttIdfClient::initialize_() {
   mqtt_cfg_.user_context = (void *) this;
   mqtt_cfg_.buffer_size = MQTT_BUFFER_SIZE;
-  ESP_LOGV(TAG, "Trying to connect to: %s port:%d", mqtt_cfg_.host, this->mqtt_cfg_.port);
 
-  if (!this->username_.empty()) {
+  mqtt_cfg_.host = this->host_.c_str();
+  mqtt_cfg_.port = this->port_;
+  mqtt_cfg_.keepalive = this->keep_alive_;
+  mqtt_cfg_.disable_clean_session = !this->clean_session_;
+
+  if (this->username_.empty()) {
     mqtt_cfg_.username = this->username_.c_str();
     if (this->password_.empty()) {
       mqtt_cfg_.password = this->password_.c_str();
@@ -26,6 +30,9 @@ bool AsyncMqttClient::initialize_() {
 
   if (!this->lwt_topic_.empty()) {
     mqtt_cfg_.lwt_topic = this->lwt_topic_.c_str();
+    //this->mqtt_cfg_.lwt_qos = this->lwt_qos_;
+    this->mqtt_cfg_.lwt_retain = this->lwt_retain_;
+
     if (!this->lwt_message_.empty()) {
       mqtt_cfg_.lwt_msg = this->lwt_message_.c_str();
       mqtt_cfg_.lwt_msg_len = this->lwt_message_.size();
@@ -55,7 +62,7 @@ bool AsyncMqttClient::initialize_() {
   return false;
 }
 
-void AsyncMqttClient::mqtt_event_handler_(esp_event_base_t base, int32_t event_id, void *event_data) {
+void MqttIdfClient::mqtt_event_handler_(esp_event_base_t base, int32_t event_id, void *event_data) {
   auto *event = static_cast<esp_mqtt_event_t *>(event_data);
   ESP_LOGV(TAG, "Event dispatched from event loop base=%s, event_id=%d", base, event_id);
   switch (event->event_id) {
@@ -76,7 +83,7 @@ void AsyncMqttClient::mqtt_event_handler_(esp_event_base_t base, int32_t event_i
       // TODO is there a way to get the disconnect reason?
       this->is_connected_ = false;
       for (auto &callback : this->on_disconnect_) {
-        callback(AsyncMqttClientDisconnectReason::TCP_DISCONNECTED);
+        callback(MqttClientDisconnectReason::TCP_DISCONNECTED);
       }
       break;
 
@@ -106,13 +113,17 @@ void AsyncMqttClient::mqtt_event_handler_(esp_event_base_t base, int32_t event_i
         topic = std::string(event->topic, event->topic_len);
       }
       ESP_LOGV(TAG, "MQTT_EVENT_DATA %s", topic.c_str());
-      AsyncMqttClientMessageProperties properties;
-      properties.qos = 0;
-      properties.retain = false;
-      properties.dup = false;
+      auto data_len = event->data_len;
+      if (data_len == 0)
+        data_len = strlen(event->data);
       for (auto &callback : this->on_message_) {
-        callback(event->topic ? const_cast<char *>(topic.c_str()) : nullptr, event->data, properties, event->data_len,
+//        for event->retain, qos, dup a later idf version is required
+//        Because esphome isn't using this data passing hardcoded values is ok in this context
+//        callback(event->topic ? const_cast<char *>(topic.c_str()) : nullptr, event->data, event->qos,event->retain,event->dup, data_len,
+//                 event->current_data_offset, event->total_data_len);
+        callback(event->topic ? const_cast<char *>(topic.c_str()) : nullptr, event->data, 0,false,false, data_len,
                  event->current_data_offset, event->total_data_len);
+
       }
     } break;
     case MQTT_EVENT_ERROR:
@@ -135,9 +146,8 @@ void AsyncMqttClient::mqtt_event_handler_(esp_event_base_t base, int32_t event_i
 }
 
 /// static - Dispatch event to instance method
-void AsyncMqttClient::mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id,
-                                         void *event_data) {
-  AsyncMqttClient *instance = static_cast<AsyncMqttClient *>(handler_args);
+void MqttIdfClient::mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
+  MqttIdfClient *instance = static_cast<MqttIdfClient *>(handler_args);
   if (instance)
     instance->mqtt_event_handler_(base, event_id, event_data);
 }

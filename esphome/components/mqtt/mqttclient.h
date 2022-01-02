@@ -12,7 +12,7 @@
 #ifdef USE_ESP_IDF
 #include "mqtt_client_idf.h"
 #else
-#include <AsyncMqttClient.h>
+#include "mqtt_client_arduino.h"
 #endif
 #include "lwip/ip_addr.h"
 
@@ -284,7 +284,12 @@ class MQTTClientComponent : public Component {
   int log_level_{ESPHOME_LOG_LEVEL};
 
   std::vector<MQTTSubscription> subscriptions_;
-  AsyncMqttClient mqtt_client_;
+  #ifdef USE_ESP_IDF
+  MqttIdfClient mqtt_client_;
+  #else
+  MQTTArduinoClient mqtt_client_;
+    #endif
+
   MQTTClientState state_{MQTT_CLIENT_DISCONNECTED};
   network::IPAddress ip_;
   bool dns_resolved_{false};
@@ -293,7 +298,7 @@ class MQTTClientComponent : public Component {
   uint32_t reboot_timeout_{300000};
   uint32_t connect_begin_;
   uint32_t last_connected_{0};
-  optional<AsyncMqttClientDisconnectReason> disconnect_reason_{};
+  optional<MqttClientDisconnectReason> disconnect_reason_{};
 };
 
 extern MQTTClientComponent *global_mqtt_client;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
