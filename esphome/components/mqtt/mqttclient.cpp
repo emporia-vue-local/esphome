@@ -1,4 +1,4 @@
-#include "mqtt_client.h"
+#include "mqttclient.h"
 #define USE_MQTT
 
 #ifdef USE_MQTT
@@ -546,7 +546,8 @@ void MQTTClientComponent::set_discovery_info(std::string &&prefix, MQTTDiscovery
 void MQTTClientComponent::disable_last_will() { this->last_will_.topic = ""; }
 
 void MQTTClientComponent::disable_discovery() {
-  this->discovery_info_ = MQTTDiscoveryInfo{.prefix = "", .retain = false};
+  this->discovery_info_ = MQTTDiscoveryInfo{
+      .prefix = "", .retain = false, .clean = false, .unique_id_generator = MQTT_LEGACY_UNIQUE_ID_GENERATOR};
 }
 void MQTTClientComponent::on_shutdown() {
   if (!this->shutdown_message_.topic.empty()) {

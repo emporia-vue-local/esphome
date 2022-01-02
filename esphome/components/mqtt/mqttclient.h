@@ -9,7 +9,11 @@
 #include "esphome/core/log.h"
 #include "esphome/components/json/json_util.h"
 #include "esphome/components/network/ip_address.h"
+#ifdef USE_ESP_IDF
+#include "mqtt_client_idf.h"
+#else
 #include <AsyncMqttClient.h>
+#endif
 #include "lwip/ip_addr.h"
 
 namespace esphome {
@@ -131,7 +135,10 @@ class MQTTClientComponent : public Component {
    */
   void add_ssl_fingerprint(const std::array<uint8_t, SHA1_SIZE> &fingerprint);
 #endif
-
+#ifdef USE_ESP_IDF
+  void set_ca_certificate(const char *cert) { this->mqtt_client_.set_ca_certificate(cert); }
+  void set_skip_cert_cn_check(bool skip_check) { this->mqtt_client_.set_skip_cert_cn_check(skip_check); }
+#endif
   const Availability &get_availability();
 
   /** Set the topic prefix that will be prepended to all topics together with "/". This will, in most cases,
@@ -269,6 +276,7 @@ class MQTTClientComponent : public Component {
       .prefix = "homeassistant",
       .retain = true,
       .clean = false,
+      .unique_id_generator = MQTT_LEGACY_UNIQUE_ID_GENERATOR,
   };
   std::string topic_prefix_{};
   MQTTMessage log_message_;
