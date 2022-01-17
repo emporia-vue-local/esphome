@@ -38,20 +38,18 @@ struct __attribute__((__packed__)) SensorReading {
 class PhaseConfig;
 class CTClampConfig;
 
-class EmporiaVueComponent : public Component, public i2c::I2CDevice {
+class EmporiaVueComponent : public PollingComponent, public i2c::I2CDevice {
  public:
+  EmporiaVueComponent() : PollingComponent(240 /* ms */) {}
+
   void dump_config() override;
 
-  void set_sensor_poll_interval(uint32_t sensor_poll_interval) { this->sensor_poll_interval_ = sensor_poll_interval; }
-  uint32_t get_sensor_poll_interval() const { return this->sensor_poll_interval_; }
   void set_phases(std::vector<PhaseConfig *> phases) { this->phases_ = std::move(phases); }
   void set_ct_clamps(std::vector<CTClampConfig *> ct_clamps) { this->ct_clamps_ = std::move(ct_clamps); }
 
-  void loop() override;
+  void update() override;
 
  protected:
-  uint32_t sensor_poll_interval_;
-  uint32_t last_poll_ = 0;
   uint8_t last_sequence_num_ = 0;
   std::vector<PhaseConfig *> phases_;
   std::vector<CTClampConfig *> ct_clamps_;
