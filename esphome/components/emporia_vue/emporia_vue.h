@@ -44,6 +44,8 @@ class EmporiaVueComponent : public PollingComponent, public i2c::I2CDevice {
 
   void dump_config() override;
 
+  float get_setup_priority() const override { return esphome::setup_priority::HARDWARE; }
+
   void set_phases(std::vector<PhaseConfig *> phases) { this->phases_ = std::move(phases); }
   void set_ct_clamps(std::vector<CTClampConfig *> ct_clamps) { this->ct_clamps_ = std::move(ct_clamps); }
 
