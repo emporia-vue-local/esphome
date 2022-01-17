@@ -28,8 +28,7 @@ MQTTClientComponent::MQTTClientComponent() {
 // Connection
 void MQTTClientComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up MQTT...");
-  this->mqtt_client_.set_on_message([this](const char *topic, char *payload, uint8_t qos, bool dup, bool retain,
-                                           size_t len, size_t index, size_t total) {
+  this->mqtt_client_.set_on_message([this](const char *topic, const char *payload, size_t len, size_t index, size_t total) {
     if (index == 0)
       this->payload_buffer_.reserve(total);
 
@@ -392,11 +391,12 @@ bool MQTTClientComponent::publish(const std::string &topic, const char *payload,
     return false;
   }
   bool logging_topic = topic == this->log_message_.topic;
-  uint16_t ret = this->mqtt_client_.publish(topic.c_str(), qos, retain, payload, payload_length);
+  auto properties = MqttClientMessageProperties{.qos = qos, .dup = false, .retain = retain};
+  uint16_t ret = this->mqtt_client_.publish(topic.c_str(), payload, payload_length, properties);
   delay(0);
   if (ret == 0 && !logging_topic && this->is_connected()) {
     delay(0);
-    ret = this->mqtt_client_.publish(topic.c_str(), qos, retain, payload, payload_length);
+    ret = this->mqtt_client_.publish(topic.c_str(), payload, payload_length, properties);
     delay(0);
   }
 

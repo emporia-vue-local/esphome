@@ -1,133 +1,75 @@
 #pragma once
-#if !defined(USE_ESP_IDF)
+#if defined(USE_ARDUINO)
 #include "mqtt_client_base.h"
 #include <AsyncMqttClient.h>
 #include "lwip/ip_addr.h"
 
-struct MqttClientMessageProperties {
-  uint8_t qos;
-  bool dup;
-  bool retain;
-};
+namespace esphome {
+namespace mqtt {
 
-enum class MqttClientDisconnectReason : int8_t {
-  TCP_DISCONNECTED = 0,
-
-  MQTT_UNACCEPTABLE_PROTOCOL_VERSION = 1,
-  MQTT_IDENTIFIER_REJECTED = 2,
-  MQTT_SERVER_UNAVAILABLE = 3,
-  MQTT_MALFORMED_CREDENTIALS = 4,
-  MQTT_NOT_AUTHORIZED = 5,
-
-  ESP8266_NOT_ENOUGH_SPACE = 6,
-
-  TLS_BAD_FINGERPRINT = 7
-};
-
-class MQTTArduinoClient : public MQTTClientBase {
+class MQTTArduinoClient : public MqttClientBase {
  public:
-  using OnConnectUserCallback = std::function<void(bool sessionPresent)>;
-  using OnDisconnectUserCallback = std::function<void(MqttClientDisconnectReason reason)>;
-  using OnSubscribeUserCallback = std::function<void(uint16_t packetId, uint8_t qos)>;
-  using OnUnsubscribeUserCallback = std::function<void(uint16_t packetId)>;
-  using OnMessageUserCallback = std::function<void(char *topic, char *payload, MqttClientMessageProperties properties,
-                                                   size_t len, size_t index, size_t total)>;
-  using OnPublishUserCallback = std::function<void(uint16_t packetId)>;
-
-  MQTTClient &setKeepAlive(uint16_t keepAlive) {
-    mqtt_client_.setKeepAlive(keepAlive);
-    return *this;
-  }
-  MQTTClient &setClientId(const char *clientId) {
-    mqtt_client_.setClientId(clientId);
-    return *this;
-  }
-  MQTTClient &setCleanSession(bool cleanSession) {
-    mqtt_client_.setCleanSession(cleanSession);
-    return *this;
-  }
-  MQTTClient &setMaxTopicLength(uint16_t maxTopicLength) {
-    mqtt_client_.setMaxTopicLength(maxTopicLength);
-    return *this;
-  };
-  MQTTClient &setCredentials(const char *username, const char *password = nullptr) {
+  virtual ~MQTTArduinoClient() = default;
+  void set_keep_alive(uint16_t keep_alive) final { mqtt_client_.setKeepAlive(keep_alive); }
+  void set_client_id(const char *client_id) final { mqtt_client_.setClientId(client_id); }
+  void set_clean_session(bool clean_session) final { mqtt_client_.setCleanSession(clean_session); }
+  void set_max_topic_length(uint16_t max_topic_length) { mqtt_client_.setMaxTopicLength(max_topic_length); };
+  void set_credentials(const char *username, const char *password) final {
     mqtt_client_.setCredentials(username, password);
-    return *this;
   }
-  MQTTClient &setWill(const char *topic, uint8_t qos, bool retain, const char *payload = nullptr, size_t length = 0) {
+  void set_will(const char *topic, uint8_t qos, bool retain, const char *payload = nullptr, size_t length = 0) final {
     mqtt_client_.setWill(topic, qos, retain, payload);
-    return *this;
   }
-  MQTTClient &setServer(IPAddress ip, uint16_t port) {
-    mqtt_client_.setServer(ip, port);
-    return *this;
+  void set_server(network::IPAddress ip, uint16_t port) final {
+    mqtt_client_.setServer(IPAddress(static_cast<uint32_t>(ip)), port);
   }
-  MQTTClient &setServer(const char *host, uint16_t port) {
-    mqtt_client_.setServer(host, port);
-    return *this;
-  }
+  void set_server(const char *host, uint16_t port) final { mqtt_client_.setServer(host, port); }
 #if ASYNC_TCP_SSL_ENABLED
-  MQTTClientBase &setSecure(bool secure) {
-    mqtt_client.setSecure(secure);
-    return *this;
-  }
-  MQTTClientBase &addServerFingerprint(const uint8_t *fingerprint) {
-    mqtt_client.addServerFingerprint(fingerprint);
-    return *this;
-  }
+  void set_secure(bool secure) { mqtt_client.setSecure(secure); }
+  void add_server_fingerprint(const uint8_t *fingerprint) { mqtt_client.addServerFingerprint(fingerprint); }
 #endif
 
-  MQTTClient &onConnect(OnConnectUserCallback callback) {
-    this->mqtt_client_.onConnect(callback);
-    return *this;
-  }
-  MQTTClient &onDisconnect(OnDisconnectUserCallback callback) {
+  void set_on_connect(const on_connect_callback_t &callback) final { this->mqtt_client_.onConnect(callback); }
+  void set_on_disconnect(const on_disconnect_callback_t &callback) final {
     std::function<void(AsyncMqttClientDisconnectReason)> async_callback =
         [callback](AsyncMqttClientDisconnectReason reason) {
           // int based enum so casting isn't a problem
           callback(static_cast<MqttClientDisconnectReason>(reason));
         };
     this->mqtt_client_.onDisconnect(async_callback);
-    return *this;
   }
-  MQTTClient &onSubscribe(OnSubscribeUserCallback callback) {
-    this->mqtt_client_.onSubscribe(callback);
-    return *this;
-  }
-  MQTTClient &onUnsubscribe(OnUnsubscribeUserCallback callback) {
+  void set_on_subscribe(const on_subscribe_callback_t &callback) final { this->mqtt_client_.onSubscribe(callback); }
+  void set_on_unsubscribe(const on_unsubscribe_callback_t &callback) final {
     this->mqtt_client_.onUnsubscribe(callback);
-    return *this;
   }
-  MQTTClient &onMessage(OnMessageUserCallback callback) {
-    std::function<void(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len,
-                       size_t index, size_t total)>
-        async_callback = [callback](char *topic, char *payload, AsyncMqttClientMessageProperties async_properties,
-                                    size_t len, size_t index, size_t total) {
-          MqttClientMessageProperties properties;
-          properties.dup = async_properties.dup;
-          properties.qos = async_properties.qos;
-          properties.retain = async_properties.retain;
-          callback(topic, payload, properties, len, index, total);
+  void set_on_message(const on_message_callback_t &callback) final {
+    std::function<void(const char *topic, const char *payload, AsyncMqttClientMessageProperties async_properties,
+                       size_t len, size_t index, size_t total)>
+        async_callback = [callback](const char *topic, const char *payload,
+                                    AsyncMqttClientMessageProperties async_properties, size_t len, size_t index,
+                                    size_t total) {
+          callback(topic, payload, len, index, total);
         };
     mqtt_client_.onMessage(async_callback);
-    return *this;
   }
-  MQTTClient &onPublish(OnPublishUserCallback callback) {
-    this->mqtt_client_.onPublish(callback);
-    return *this;
-  }
+  void set_on_publish(const on_publish_uer_callback_t &callback) final { this->mqtt_client_.onPublish(callback); }
 
-  bool connected() const { return mqtt_client_.connected(); }
-  void connect() { mqtt_client_.connect(); }
-  void disconnect(bool force = false) { mqtt_client_.disconnect(force); }
-  uint16_t subscribe(const char *topic, uint8_t qos) { return mqtt_client_.subscribe(topic, qos); }
-  uint16_t unsubscribe(const char *topic) { return mqtt_client_.unsubscribe(topic); }
-  uint16_t publish(const char *topic, uint8_t qos, bool retain, const char *payload = nullptr, size_t length = 0,
-                   bool dup = false, uint16_t message_id = 0) {
-    return mqtt_client_.publish(topic, qos, retain, payload, length, dup, message_id);
+  bool connected() const final { return mqtt_client_.connected(); }
+  void connect() final { mqtt_client_.connect(); }
+  void disconnect(bool force) final { mqtt_client_.disconnect(force); }
+  uint16_t subscribe(const char *topic, uint8_t qos) final { return mqtt_client_.subscribe(topic, qos); }
+  uint16_t unsubscribe(const char *topic) final { return mqtt_client_.unsubscribe(topic); }
+  uint16_t publish(const char *topic, const char *payload = nullptr, size_t length = 0,
+                   MqttClientMessageProperties properties = MqttClientMessageProperties{},
+                   uint16_t message_id = 0) final {
+    return mqtt_client_.publish(topic, properties.qos, properties.retain, payload, length, properties.dup, message_id);
   }
 
  protected:
   AsyncMqttClient mqtt_client_;
 };
-#endif 
+
+}  // namespace mqtt
+}  // namespace esphome
+
+#endif  // defined(USE_ARDUINO)

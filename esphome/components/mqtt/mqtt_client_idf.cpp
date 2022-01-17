@@ -1,6 +1,3 @@
-///
-/// Mirror the public interface of MqttIdfClient using esp-idf
-///
 #ifdef USE_ESP_IDF
 #include <string>
 #include "mqtt_client_idf.h"
@@ -117,11 +114,7 @@ void MqttIdfClient::mqtt_event_handler_(esp_event_base_t base, int32_t event_id,
       if (data_len == 0)
         data_len = strlen(event->data);
       for (auto &callback : this->on_message_) {
-//        for event->retain, qos, dup a later idf version is required
-//        Because esphome isn't using this data passing hardcoded values is ok in this context
-//        callback(event->topic ? const_cast<char *>(topic.c_str()) : nullptr, event->data, event->qos,event->retain,event->dup, data_len,
-//                 event->current_data_offset, event->total_data_len);
-        callback(event->topic ? const_cast<char *>(topic.c_str()) : nullptr, event->data, 0,false,false, data_len,
+        callback(event->topic ? const_cast<char *>(topic.c_str()) : nullptr, event->data, data_len,
                  event->current_data_offset, event->total_data_len);
 
       }
