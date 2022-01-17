@@ -10,7 +10,6 @@ static const char *const TAG = "emporia_vue";
 void EmporiaVueComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Emporia Vue");
   LOG_I2C_DEVICE(this);
-  ESP_LOGCONFIG(TAG, "  Sensor Poll Interval: %dms", this->sensor_poll_interval_);
 
   for (auto *phase : this->phases_) {
     std::string wire;
@@ -40,13 +39,7 @@ void EmporiaVueComponent::dump_config() {
   }
 }
 
-void EmporiaVueComponent::loop() {
-  uint32_t now = millis();
-
-  if (now < this->last_poll_ + this->sensor_poll_interval_) {
-    return;
-  }
-
+void EmporiaVueComponent::update() {
   SensorReading sensor_reading;
 
   i2c::ErrorCode err = read(reinterpret_cast<uint8_t *>(&sensor_reading), sizeof(sensor_reading));
@@ -82,7 +75,6 @@ void EmporiaVueComponent::loop() {
   }
 
   this->last_sequence_num_ = sensor_reading.sequence_num;
-  this->last_poll_ = now;
 }
 
 void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
