@@ -63,7 +63,7 @@ class MqttIdfClient : public MqttClientBase {
       if (initialize_())
         esp_mqtt_client_start(handler_.get());
   }
-  void disconnect(bool) override {
+  void disconnect() override {
     if (is_initalized_)
       esp_mqtt_client_disconnect(handler_.get());
   }
@@ -89,17 +89,16 @@ class MqttIdfClient : public MqttClientBase {
    * @param properties dup is ignored for ESP-IDF
    */
   uint16_t publish(const char *topic, const char *payload = nullptr, size_t length = 0,
-                   MqttClientMessageProperties properties = MqttClientMessageProperties{},
-                   uint16_t message_id = 0) final {
+                   uint8_t qos = 0, bool retain = false, uint16_t message_id = 0) final {
 #if defined IDF_MQTT_USE_ENQUEUE
     // use the non-blocking version
     // it can delay sending a couple of seconds but won't block
-    auto status = to_async_status(esp_mqtt_client_enqueue(handler_.get(), topic, payload, length, properties.qos, properties.retain, true));
+    auto status = to_async_status(esp_mqtt_client_enqueue(handler_.get(), topic, payload, length, qos, retain, true));
 #else
     // might block for several seconds, either due to network timeout (10s)
     // or if publishing payloads longer than internal buffer (due to message fragmentation)
     auto status = to_async_status(
-        esp_mqtt_client_publish(handler_.get(), topic, payload, length, properties.qos, properties.retain));
+        esp_mqtt_client_publish(handler_.get(), topic, payload, length, qos, retain));
 #endif
     return status;
   }

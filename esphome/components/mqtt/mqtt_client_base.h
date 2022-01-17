@@ -83,16 +83,14 @@ class MqttClientBase {
   virtual void set_on_publish(const on_publish_uer_callback_t &callback) = 0;
   virtual bool connected() const = 0;
   virtual void connect() = 0;
-  virtual void disconnect(bool) = 0;
+  virtual void disconnect() = 0;
   virtual uint16_t subscribe(const char *topic, uint8_t qos) = 0;
   virtual uint16_t unsubscribe(const char *topic) = 0;
   virtual uint16_t publish(const char *topic, const char *payload = nullptr, size_t length = 0,
-                           MqttClientMessageProperties properties = MqttClientMessageProperties{},
-                           uint16_t message_id = 0) = 0;
+                           uint8_t qos = 0, bool retain = false, uint16_t message_id = 0) = 0;
   uint16_t publish(const std::string &topic, const std::string &payload = "",
-                           MqttClientMessageProperties properties = MqttClientMessageProperties{},
-                           uint16_t message_id = 0) {
-    return publish(topic.c_str(), payload.c_str(), payload.size(), properties, message_id);
+                           uint8_t qos = 0, bool retain = false, uint16_t message_id = 0) {
+    return publish(topic.c_str(), payload.c_str(), payload.size(), qos, retain, message_id);
   }
 };
 

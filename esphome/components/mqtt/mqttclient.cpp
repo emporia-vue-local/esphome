@@ -173,7 +173,7 @@ void MQTTClientComponent::start_connect_() {
 
   ESP_LOGI(TAG, "Connecting to MQTT...");
   // Force disconnect first
-  this->mqtt_client_.disconnect(true);
+  this->mqtt_client_.disconnect();
 
   this->mqtt_client_.set_client_id(this->credentials_.client_id.c_str());
   const char *username = nullptr;
@@ -391,12 +391,11 @@ bool MQTTClientComponent::publish(const std::string &topic, const char *payload,
     return false;
   }
   bool logging_topic = topic == this->log_message_.topic;
-  auto properties = MqttClientMessageProperties{.qos = qos, .dup = false, .retain = retain};
-  uint16_t ret = this->mqtt_client_.publish(topic.c_str(), payload, payload_length, properties);
+  uint16_t ret = this->mqtt_client_.publish(topic.c_str(), payload, payload_length, qos, false);
   delay(0);
   if (ret == 0 && !logging_topic && this->is_connected()) {
     delay(0);
-    ret = this->mqtt_client_.publish(topic.c_str(), payload, payload_length, properties);
+    ret = this->mqtt_client_.publish(topic.c_str(), payload, payload_length, qos, false);
     delay(0);
   }
 
@@ -555,7 +554,7 @@ void MQTTClientComponent::on_shutdown() {
     this->publish(this->shutdown_message_);
     yield();
   }
-  this->mqtt_client_.disconnect(true);
+  this->mqtt_client_.disconnect();
 }
 
 #if ASYNC_TCP_SSL_ENABLED
