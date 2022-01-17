@@ -20,7 +20,6 @@ from esphome.const import (
 CONF_CT_CLAMPS = "ct_clamps"
 CONF_PHASES = "phases"
 CONF_PHASE_ID = "phase_id"
-CONF_SENSOR_POLL_INTERVAL = "sensor_poll_interval"
 
 CODEOWNERS = ["@flaviut", "@Maelstrom96", "@krconv"]
 ESP_PLATFORMS = ["esp-idf"]
@@ -86,9 +85,6 @@ CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(EmporiaVueComponent),
-            cv.Optional(
-                CONF_SENSOR_POLL_INTERVAL, default="240ms"
-            ): cv.positive_time_period_milliseconds,
             cv.Required(CONF_PHASES): cv.ensure_list(
                 {
                     cv.Required(CONF_ID): cv.declare_id(PhaseConfig),
@@ -114,7 +110,6 @@ CONFIG_SCHEMA = cv.All(
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    cg.add(var.set_sensor_poll_interval(config[CONF_SENSOR_POLL_INTERVAL]))
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
 
