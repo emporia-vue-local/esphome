@@ -24,7 +24,7 @@ CONF_PHASE_ID = "phase_id"
 CODEOWNERS = ["@flaviut", "@Maelstrom96", "@krconv"]
 ESP_PLATFORMS = ["esp-idf"]
 DEPENDENCIES = ["i2c"]
-AUTOLOAD = ["sensor"]
+AUTO_LOAD = ["sensor"]
 
 emporia_vue_ns = cg.esphome_ns.namespace("emporia_vue")
 EmporiaVueComponent = emporia_vue_ns.class_(
