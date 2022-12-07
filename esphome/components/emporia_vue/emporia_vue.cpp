@@ -121,14 +121,8 @@ void CTClampConfig::update_from_reading(const SensorReading &sensor_reading) {
   }
   if (this->current_sensor_) {
     uint16_t raw_current = sensor_reading.current[this->input_port_];
-    double raw_current_d = (double)raw_current;
-    double scalar;
-    if(this->input_port_ <= CTInputPort::C) {
-      scalar = 0.018182244744744745d;
-    } else {
-      scalar = 0.004545561186186186d;
-    }
-    this->current_sensor_->publish_state(raw_current_d*scalar);
+    // we don't know how this sensor is calibrated by the original firmware
+    this->current_sensor_->publish_state(raw_current);
   }
 }
 
