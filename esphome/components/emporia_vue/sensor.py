@@ -8,13 +8,18 @@ from esphome.const import (
     CONF_INPUT,
     CONF_POWER,
     CONF_VOLTAGE,
+    CONF_FREQUENCY,
+    CONF_PHASE_ANGLE,
     DEVICE_CLASS_CURRENT,
+    DEVICE_CLASS_FREQUENCY,
     DEVICE_CLASS_POWER,
     DEVICE_CLASS_VOLTAGE,
     STATE_CLASS_MEASUREMENT,
     UNIT_AMPERE,
     UNIT_WATT,
     UNIT_VOLT,
+    UNIT_HERTZ,
+    UNIT_DEGREES,
 )
 
 CONF_CT_CLAMPS = "ct_clamps"
@@ -96,6 +101,18 @@ CONFIG_SCHEMA = cv.All(
                         state_class=STATE_CLASS_MEASUREMENT,
                         accuracy_decimals=1,
                     ),
+                    cv.Optional(CONF_FREQUENCY): sensor.sensor_schema(
+                        unit_of_measurement=UNIT_HERTZ,
+                        device_class=DEVICE_CLASS_FREQUENCY,
+                        state_class=STATE_CLASS_MEASUREMENT,
+                        accuracy_decimals=1,
+                    ),
+                    cv.Optional(CONF_PHASE_ANGLE): sensor.sensor_schema(
+                        unit_of_measurement=UNIT_DEGREES,
+                        device_class=DEVICE_CLASS_FREQUENCY,
+                        state_class=STATE_CLASS_MEASUREMENT,
+                        accuracy_decimals=0,
+                    ),
                 }
             ),
             cv.Required(CONF_CT_CLAMPS): cv.ensure_list(SCHEMA_CT_CLAMP),
@@ -122,6 +139,14 @@ async def to_code(config):
         if CONF_VOLTAGE in phase_config:
             voltage_sensor = await sensor.new_sensor(phase_config[CONF_VOLTAGE])
             cg.add(phase_var.set_voltage_sensor(voltage_sensor))
+
+        if CONF_FREQUENCY in phase_config:
+            frequency_sensor = await sensor.new_sensor(phase_config[CONF_FREQUENCY])
+            cg.add(phase_var.set_frequency_sensor(frequency_sensor))
+
+        if CONF_PHASE_ANGLE in phase_config:
+            phase_angle_sensor = await sensor.new_sensor(phase_config[CONF_PHASE_ANGLE])
+            cg.add(phase_var.set_phase_angle_sensor(phase_angle_sensor))
 
         phases.append(phase_var)
     cg.add(var.set_phases(phases))
