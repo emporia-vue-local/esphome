@@ -404,11 +404,11 @@ sensor:
     phases:
       - id: phase_a
         input: BLACK
-        voltage: 
+        voltage:
           name: "Phase A Voltage"
       - id: phase_c
         input: RED
-        voltage: 
+        voltage:
           name: "Phase C Voltage"
     ct_clamps:
       - phase_id: phase_a
