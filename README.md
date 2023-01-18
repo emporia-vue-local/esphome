@@ -1,10 +1,13 @@
-**ESPHome Documentation:** https://esphome.io/
-
 For issues, please go to [the discussion board](https://github.com/emporia-vue-local/esphome/discussions).
+
+⚠️NOTICE⚠️: If you have already flashed your device with a previous version of the config, I'd strongly encourage you to add `flash_write_interval: "48h"` from below to your config to preserve the flash memory's health and your ability to update the device in the future.
+
+**ESPHome Documentation:** https://esphome.io/
 
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-01-18: increase flash write interval
 - 2022-12-07: switch suggested branch back to dev
 - 2022-07-30: add home assistant instructions & MQTT FAQ.
 - 2022-07-16: mention using UART adaptor's RTS pin, thanks to @PanicRide 
@@ -71,6 +74,10 @@ wifi:
   ssid: "<wifi ssid>"
   password: "<wifi password>"
 
+preferences:
+  # the default of 1min is far too short--flash chip is rated
+  # for approx 100k writes.
+  flash_write_interval: "48h"
 i2c:
   sda: 21
   scl: 22
