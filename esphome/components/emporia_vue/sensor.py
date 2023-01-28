@@ -86,35 +86,68 @@ SCHEMA_CT_CLAMP = {
     ),
 }
 
+
+def validate_phases(val):
+    base_validated = cv.Schema(
+        cv.ensure_list(
+            {
+                cv.Required(CONF_ID): cv.declare_id(PhaseConfig),
+                cv.Required(CONF_INPUT): cv.enum(PHASE_INPUT),
+                cv.Optional(CONF_CALIBRATION, default=0.022): cv.zero_to_one_float,
+                cv.Optional(CONF_VOLTAGE): sensor.sensor_schema(
+                    unit_of_measurement=UNIT_VOLT,
+                    device_class=DEVICE_CLASS_VOLTAGE,
+                    state_class=STATE_CLASS_MEASUREMENT,
+                    accuracy_decimals=1,
+                ),
+                cv.Optional(CONF_FREQUENCY): sensor.sensor_schema(
+                    unit_of_measurement=UNIT_HERTZ,
+                    device_class=DEVICE_CLASS_FREQUENCY,
+                    state_class=STATE_CLASS_MEASUREMENT,
+                    accuracy_decimals=1,
+                ),
+                cv.Optional(CONF_PHASE_ANGLE): sensor.sensor_schema(
+                    unit_of_measurement=UNIT_DEGREES,
+                    device_class=DEVICE_CLASS_FREQUENCY,
+                    state_class=STATE_CLASS_MEASUREMENT,
+                    accuracy_decimals=0,
+                ),
+            }
+        )
+    )(val)
+
+    if len(base_validated) > 3:
+        raise cv.Invalid("No more than 3 phases are supported")
+
+    inputs = [phase[CONF_INPUT] for phase in base_validated]
+    if len(inputs) != len(set(inputs)):
+        raise cv.Invalid("Only one entry per input color is allowed")
+
+    for i, phase in enumerate(base_validated):
+        input_wire = phase[CONF_INPUT]
+        if input_wire == "BLACK":
+            if CONF_PHASE_ANGLE in phase:
+                raise cv.Invalid(
+                    "Phase angle is not supported for the black wire, only for the "
+                    "red and blue wires",
+                    path=[i, CONF_PHASE_ANGLE],
+                )
+        elif input_wire in {"RED", "BLUE"}:
+            if CONF_FREQUENCY in phase:
+                raise cv.Invalid(
+                    "Frequency is not supported for the red and blue wires, only for "
+                    "the black wire",
+                    path=[i, CONF_FREQUENCY],
+                )
+
+    return base_validated
+
+
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(EmporiaVueComponent),
-            cv.Required(CONF_PHASES): cv.ensure_list(
-                {
-                    cv.Required(CONF_ID): cv.declare_id(PhaseConfig),
-                    cv.Required(CONF_INPUT): cv.enum(PHASE_INPUT),
-                    cv.Optional(CONF_CALIBRATION, default=0.022): cv.zero_to_one_float,
-                    cv.Optional(CONF_VOLTAGE): sensor.sensor_schema(
-                        unit_of_measurement=UNIT_VOLT,
-                        device_class=DEVICE_CLASS_VOLTAGE,
-                        state_class=STATE_CLASS_MEASUREMENT,
-                        accuracy_decimals=1,
-                    ),
-                    cv.Optional(CONF_FREQUENCY): sensor.sensor_schema(
-                        unit_of_measurement=UNIT_HERTZ,
-                        device_class=DEVICE_CLASS_FREQUENCY,
-                        state_class=STATE_CLASS_MEASUREMENT,
-                        accuracy_decimals=1,
-                    ),
-                    cv.Optional(CONF_PHASE_ANGLE): sensor.sensor_schema(
-                        unit_of_measurement=UNIT_DEGREES,
-                        device_class=DEVICE_CLASS_FREQUENCY,
-                        state_class=STATE_CLASS_MEASUREMENT,
-                        accuracy_decimals=0,
-                    ),
-                }
-            ),
+            cv.Required(CONF_PHASES): validate_phases,
             cv.Required(CONF_CT_CLAMPS): cv.ensure_list(SCHEMA_CT_CLAMP),
         },
     )

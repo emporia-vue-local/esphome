@@ -84,14 +84,13 @@ void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
   }
 
   uint16_t raw_frequency = sensor_reading.frequency;
-  // frequency is only supported for the phase input `BLACK`
-  if (this->frequency_sensor_ && this->input_wire_ == PhaseInputWire::BLACK) {
+  // validation that these sensors are allowed on this phase is done in the codegen stage
+  if (this->frequency_sensor_) {
     // see https://github.com/emporia-vue-local/esphome/pull/88 for constant explanation
     float frequency = (float) raw_frequency / 7.025f;
     this->frequency_sensor_->publish_state(frequency);
   }
-  // phase angle is in relation to input `BLACK`, so it is only valid for phase inputs `RED` and `BLUE`
-  if (this->phase_angle_sensor_ && this->input_wire_ != PhaseInputWire::BLACK) {
+  if (this->phase_angle_sensor_) {
     uint16_t raw_phase_angle = sensor_reading.degrees[((uint8_t) this->input_wire_) - 1];
     float phase_angle = ((float) raw_phase_angle) * 360.0f / ((float) raw_frequency);
     // this is truncated to a uint16_t on the vue 2
