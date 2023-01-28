@@ -86,7 +86,7 @@ void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
   uint16_t raw_frequency = sensor_reading.frequency;
   // frequency is only supported for the phase input `BLACK`
   if (this->frequency_sensor_ && this->input_wire_ == PhaseInputWire::BLACK) {
-    float frequency = (float) raw_frequency;
+    float frequency = 25975.0f / (float) raw_frequency;
     this->frequency_sensor_->publish_state(frequency);
   }
   // phase angle is in relation to input `BLACK`, so it is only valid for phase inputs `RED` and `BLUE`
