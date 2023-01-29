@@ -7,6 +7,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-01-28: add frequency support
 - 2023-01-18: increase flash write interval
 - 2022-12-07: switch suggested branch back to dev
 - 2022-07-30: add home assistant instructions & MQTT FAQ.
@@ -120,12 +121,18 @@ sensor:
         voltage:
           name: "Phase A Voltage"
           filters: [*moving_avg, *pos]
+	frequency:
+          name: "Phase A Frequency"
+          filters: [*moving_avg, *pos]
       - id: phase_b  # Verify that this specific phase/leg is connected to correct input wire color on device listed below
         input: RED  # Vue device wire color
         calibration: 0.022  # 0.022 is used as the default as starting point but may need adjusted to ensure accuracy
         # To calculate new calibration value use the formula <in-use calibration value> * <accurate voltage> / <reporting voltage>
         voltage:
           name: "Phase B Voltage"
+          filters: [*moving_avg, *pos]
+        phase_angle:
+          name: "Phase B Phase Angle"
           filters: [*moving_avg, *pos]
     ct_clamps:
       - phase_id: phase_a
