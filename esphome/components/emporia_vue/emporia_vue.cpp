@@ -82,6 +82,20 @@ void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
     float calibrated_voltage = sensor_reading.voltage[this->input_wire_] * this->calibration_;
     this->voltage_sensor_->publish_state(calibrated_voltage);
   }
+
+  uint16_t raw_frequency = sensor_reading.frequency;
+  // validation that these sensors are allowed on this phase is done in the codegen stage
+  if (this->frequency_sensor_) {
+    // see https://github.com/emporia-vue-local/esphome/pull/88 for constant explanation
+    float frequency = (float) raw_frequency / 7.025f;
+    this->frequency_sensor_->publish_state(frequency);
+  }
+  if (this->phase_angle_sensor_) {
+    uint16_t raw_phase_angle = sensor_reading.degrees[((uint8_t) this->input_wire_) - 1];
+    float phase_angle = ((float) raw_phase_angle) * 360.0f / ((float) raw_frequency);
+    // this is truncated to a uint16_t on the vue 2
+    this->phase_angle_sensor_->publish_state(phase_angle);
+  }
 }
 
 int32_t PhaseConfig::extract_power_for_phase(const ReadingPowerEntry &power_entry) {
