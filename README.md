@@ -121,7 +121,7 @@ sensor:
         voltage:
           name: "Phase A Voltage"
           filters: [*moving_avg, *pos]
-	frequency:
+        frequency:
           name: "Phase A Frequency"
           filters: [*moving_avg, *pos]
       - id: phase_b  # Verify that this specific phase/leg is connected to correct input wire color on device listed below
