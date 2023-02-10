@@ -88,7 +88,9 @@ i2c:
 time:
   - platform: sntp
     id: my_time
-
+    # Adjust to your local timezone.  Impacts on when day is wrapped for daily energy calculations
+    timezone: 'America/Los_Angeles'
+    
 # these are called references in YAML. They allow you to reuse
 # this configuration in each sensor, while only defining it once
 .defaultfilters:
