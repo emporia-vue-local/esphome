@@ -108,7 +108,6 @@ def validate_phases(val):
                 ),
                 cv.Optional(CONF_PHASE_ANGLE): sensor.sensor_schema(
                     unit_of_measurement=UNIT_DEGREES,
-                    device_class=DEVICE_CLASS_FREQUENCY,
                     state_class=STATE_CLASS_MEASUREMENT,
                     accuracy_decimals=0,
                 ),
