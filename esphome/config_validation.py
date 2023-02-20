@@ -13,6 +13,7 @@ import voluptuous as vol
 
 from esphome import core
 import esphome.codegen as cg
+from esphome.config_helpers import Extend
 from esphome.const import (
     ALLOWED_NAME_CHARS,
     CONF_AVAILABILITY,
@@ -490,6 +491,8 @@ def declare_id(type):
         if value is None:
             return core.ID(None, is_declaration=True, type=type)
 
+        if isinstance(value, Extend):
+            raise Invalid(f"Source for extension of ID '{value.value}' was not found.")
         return core.ID(validate_id_name(value), is_declaration=True, type=type)
 
     return validator
@@ -1053,9 +1056,8 @@ def mqtt_qos(value):
 
 def requires_component(comp):
     """Validate that this option can only be specified when the component `comp` is loaded."""
-    # pylint: disable=unsupported-membership-test
+
     def validator(value):
-        # pylint: disable=unsupported-membership-test
         if comp not in CORE.loaded_integrations:
             raise Invalid(f"This option requires component {comp}")
         return value
@@ -1241,7 +1243,7 @@ def enum(mapping, **kwargs):
     return validator
 
 
-LAMBDA_ENTITY_ID_PROG = re.compile(r"id\(\s*([a-zA-Z0-9_]+\.[.a-zA-Z0-9_]+)\s*\)")
+LAMBDA_ENTITY_ID_PROG = re.compile(r"\Wid\(\s*([a-zA-Z0-9_]+\.[.a-zA-Z0-9_]+)\s*\)")
 
 
 def lambda_(value):
@@ -1482,7 +1484,6 @@ class OnlyWith(Optional):
 
     @property
     def default(self):
-        # pylint: disable=unsupported-membership-test
         if self._component in CORE.loaded_integrations:
             return self._default
         return vol.UNDEFINED
