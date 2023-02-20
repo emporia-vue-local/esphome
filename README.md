@@ -7,7 +7,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
-- 2023-02-20: update style to modern home assistant, add buzzer support
+- 2023-02-20: update style to modern home assistant, add buzzer support, add led support
 - 2023-01-28: add frequency support
 - 2023-01-18: increase flash write interval
 - 2022-12-07: switch suggested branch back to dev
@@ -113,6 +113,12 @@ button:
     name: "Two Beeps"
     on_press:
       - rtttl.play: "two short:d=4,o=5,b=100:16e6,16e6"
+
+light:
+  - platform: status_led
+    name: "D3_LED"
+    pin: 23
+    restore_mode: ALWAYS_ON
 
 i2c:
   sda: 21
