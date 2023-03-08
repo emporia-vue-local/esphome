@@ -7,6 +7,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-03-08: configuration example for net metering
 - 2023-02-20: update style to modern home assistant, add buzzer support, add led support
 - 2023-01-28: add frequency support
 - 2023-01-18: increase flash write interval
@@ -91,7 +92,7 @@ logger:
 wifi:
   # Wifi credentials are stored securely by new device wizard.
   ssid: !secret wifi_ssid
-  password: !secret wifi_pasword
+  password: !secret wifi_password
 
 preferences:
   # the default of 1min is far too short--flash chip is rated
@@ -176,6 +177,20 @@ sensor:
         phase_angle:
           name: "Phase B Phase Angle"
           filters: [*moving_avg, *pos]
+      - phase_id: phase_a
+        input: "A"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase A Power Return"
+          id: phase_a_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]
+      - phase_id: phase_b
+        input: "B"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase B Power Return"
+          id: phase_b_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]
     ct_clamps:
       - phase_id: phase_a
         input: "A"  # Verify the CT going to this device input also matches the phase/leg
@@ -217,6 +232,16 @@ sensor:
   - platform: total_daily_energy
     name: "Total Daily Energy"
     power_id: total_power
+    accuracy_decimals: 0
+  - platform: template
+    name: "Total Power Return"
+    lambda: return id(phase_a_power_return).state + id(phase_b_power_return).state;
+    update_interval: 1s
+    id: total_power_return
+    unit_of_measurement: "W"
+  - platform: total_daily_energy
+    name: "Total Daily Energy Return"
+    power_id: total_power_return
     accuracy_decimals: 0
   - { power_id:  cir1, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 1 Daily Energy" }
   - { power_id:  cir2, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 2 Daily Energy" }
