@@ -26,11 +26,11 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 ## What you need
 
 - USB to serial converter module
-	- I tested this with a cheap & generic CH340G adapter
+    - I tested this with a cheap & generic CH340G adapter
 - 4 male-to-female jumper wires
 - 4 male pcb-mount headers
 - Soldering iron & accessories
-	- [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
+    - [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
 - [esptool.py](https://github.com/espressif/esptool) ([windows instructions](https://cyberblogspot.com/how-to-install-esptool-on-windows-10/), [generic instructions](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html))
 - ESPHome image
 
@@ -389,4 +389,4 @@ You'll see an error like
 Could not find the package with 'platformio/toolchain-esp32ulp @ ~1.22851.0' requirements for your system 'linux_aarch64'
 ```
 
-You can try using a different computer. 32-bit and 64-bit x86 computers are both compatible (most laptops & desktops). 
+You can try using a different computer. 32-bit and 64-bit x86 computers are both compatible (most laptops & desktops).
