@@ -192,20 +192,6 @@ sensor:
           id: phase_b_power
           device_class: power
           filters: [*moving_avg, *pos]
-      - phase_id: phase_a
-        input: "A"  # Verify the CT going to this device input also matches the phase/leg
-        power:
-          name: "Phase A Power Return"
-          id: phase_a_power_return
-          device_class: power
-          filters: [*moving_avg, *invert]
-      - phase_id: phase_b
-        input: "B"  # Verify the CT going to this device input also matches the phase/leg
-        power:
-          name: "Phase B Power Return"
-          id: phase_b_power_return
-          device_class: power
-          filters: [*moving_avg, *invert]
       # Pay close attention to set the phase_id for each breaker by matching it to the phase/leg it connects to in the panel
       - { phase_id: phase_a, input:  "1", power: { name:  "Circuit 1 Power", id:  cir1, filters: [ *moving_avg, *pos ] } }
       - { phase_id: phase_b, input:  "2", power: { name:  "Circuit 2 Power", id:  cir2, filters: [ *moving_avg, *pos ] } }
@@ -233,16 +219,6 @@ sensor:
     name: "Total Daily Energy"
     power_id: total_power
     accuracy_decimals: 0
-  - platform: template
-    name: "Total Power Return"
-    lambda: return id(phase_a_power_return).state + id(phase_b_power_return).state;
-    update_interval: 1s
-    id: total_power_return
-    unit_of_measurement: "W"
-  - platform: total_daily_energy
-    name: "Total Daily Energy Return"
-    power_id: total_power_return
-    accuracy_decimals: 0
   - { power_id:  cir1, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 1 Daily Energy" }
   - { power_id:  cir2, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 2 Daily Energy" }
   - { power_id:  cir3, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 3 Daily Energy" }
@@ -259,6 +235,51 @@ sensor:
   - { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 14 Daily Energy" }
   - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 15 Daily Energy" }
   - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 16 Daily Energy" }
+```
+
+You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` with a unique password, and your wifi credentials, respectively.
+
+You'll also want to update the `sensor` section of the configuration using the information you've collected in *Panel installation, part 1*.
+
+Note the `sliding_window_moving_average`. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant.
+
+Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
+
+To configure energy returned to the grid for NET metering ( [more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
+```
+sensor:
+  - platform: emporia_vue
+    ct_clamps:
+      - phase_id: phase_a
+        input: "A"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase A Power Return"
+          id: phase_a_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase A
+      - phase_id: phase_b
+        input: "B"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase B Power Return"
+          id: phase_b_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase B
+sensors:
+  - platform: template
+    name: "Total Power Return"
+    lambda: return id(phase_a_power_return).state + id(phase_b_power_return).state;
+    update_interval: 1s
+    id: total_power_return
+    unit_of_measurement: "W"
+  - platform: total_daily_energy
+    name: "Total Daily Energy Return"
+    power_id: total_power_return
+    accuracy_decimals: 0
+
+```
+Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clapms 15 and 16:
+```
+sensors:
   - platform: template
     name: "Solar Power"
     lambda: return id(cir15).state + id(cir16).state;
@@ -269,14 +290,6 @@ sensor:
     power_id: solar_power
     accuracy_decimals: 0
 ```
-
-You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` with a unique password, and your wifi credentials, respectively.
-
-You'll also want to update the `sensor` section of the configuration using the information you've collected in *Panel installation, part 1*.
-
-Note the `sliding_window_moving_average`. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant.
-
-Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
 
 Do not use the `web_server` since it is not compatible with the `esp-idf` framework, and you will get odd error messages.
 
