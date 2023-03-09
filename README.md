@@ -264,7 +264,6 @@ sensor:
           id: phase_b_power_return
           device_class: power
           filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase B
-sensors:
   - platform: template
     name: "Total Power Return"
     lambda: return id(phase_a_power_return).state + id(phase_b_power_return).state;
@@ -279,7 +278,7 @@ sensors:
 ```
 Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clapms 15 and 16:
 ```
-sensors:
+sensor:
   - platform: template
     name: "Solar Power"
     lambda: return id(cir15).state + id(cir16).state;
