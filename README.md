@@ -13,11 +13,11 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 - 2023-01-18: increase flash write interval
 - 2022-12-07: switch suggested branch back to dev
 - 2022-07-30: add home assistant instructions & MQTT FAQ.
-- 2022-07-16: mention using UART adaptor's RTS pin, thanks to @PanicRide 
+- 2022-07-16: mention using UART adaptor's RTS pin, thanks to @PanicRide
 - 2022-07-02: mention mqtt is now supported
 - 2022-04-30: bump software version number to 2022.4.0
 - 2022-05-04: mention 64-bit ARM issues in FAQ
-	
+
 </details>
 
 # Setting up Emporia Vue 2 with ESPHome
@@ -30,7 +30,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 - 4 male-to-female jumper wires
 - 4 male pcb-mount headers
 - Soldering iron & accessories
-	- [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering) 
+	- [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
 - [esptool.py](https://github.com/espressif/esptool) ([windows instructions](https://cyberblogspot.com/how-to-install-esptool-on-windows-10/), [generic instructions](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html))
 - ESPHome image
 
