@@ -177,20 +177,6 @@ sensor:
         phase_angle:
           name: "Phase B Phase Angle"
           filters: [*moving_avg, *pos]
-      - phase_id: phase_a
-        input: "A"  # Verify the CT going to this device input also matches the phase/leg
-        power:
-          name: "Phase A Power Return"
-          id: phase_a_power_return
-          device_class: power
-          filters: [*moving_avg, *invert]
-      - phase_id: phase_b
-        input: "B"  # Verify the CT going to this device input also matches the phase/leg
-        power:
-          name: "Phase B Power Return"
-          id: phase_b_power_return
-          device_class: power
-          filters: [*moving_avg, *invert]
     ct_clamps:
       - phase_id: phase_a
         input: "A"  # Verify the CT going to this device input also matches the phase/leg
@@ -206,6 +192,20 @@ sensor:
           id: phase_b_power
           device_class: power
           filters: [*moving_avg, *pos]
+      - phase_id: phase_a
+        input: "A"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase A Power Return"
+          id: phase_a_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]
+      - phase_id: phase_b
+        input: "B"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase B Power Return"
+          id: phase_b_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]
       # Pay close attention to set the phase_id for each breaker by matching it to the phase/leg it connects to in the panel
       - { phase_id: phase_a, input:  "1", power: { name:  "Circuit 1 Power", id:  cir1, filters: [ *moving_avg, *pos ] } }
       - { phase_id: phase_b, input:  "2", power: { name:  "Circuit 2 Power", id:  cir2, filters: [ *moving_avg, *pos ] } }
@@ -259,6 +259,15 @@ sensor:
   - { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 14 Daily Energy" }
   - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 15 Daily Energy" }
   - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 16 Daily Energy" }
+  - platform: template
+    name: "Solar Power"
+    lambda: return id(cir15).state + id(cir16).state;
+    id: solar_power
+    unit_of_measurement: "W"
+  - platform: total_daily_energy
+    name: "Solar Daily Energy"
+    power_id: solar_power
+    accuracy_decimals: 0
 ```
 
 You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` with a unique password, and your wifi credentials, respectively.
