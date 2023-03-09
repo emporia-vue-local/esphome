@@ -7,16 +7,17 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-03-08: configuration example for net metering
 - 2023-02-20: update style to modern home assistant, add buzzer support, add led support
 - 2023-01-28: add frequency support
 - 2023-01-18: increase flash write interval
 - 2022-12-07: switch suggested branch back to dev
 - 2022-07-30: add home assistant instructions & MQTT FAQ.
-- 2022-07-16: mention using UART adaptor's RTS pin, thanks to @PanicRide 
+- 2022-07-16: mention using UART adaptor's RTS pin, thanks to @PanicRide
 - 2022-07-02: mention mqtt is now supported
 - 2022-04-30: bump software version number to 2022.4.0
 - 2022-05-04: mention 64-bit ARM issues in FAQ
-	
+
 </details>
 
 # Setting up Emporia Vue 2 with ESPHome
@@ -25,11 +26,11 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 ## What you need
 
 - USB to serial converter module
-	- I tested this with a cheap & generic CH340G adapter
+    - I tested this with a cheap & generic CH340G adapter
 - 4 male-to-female jumper wires
 - 4 male pcb-mount headers
 - Soldering iron & accessories
-	- [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering) 
+    - [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
 - [esptool.py](https://github.com/espressif/esptool) ([windows instructions](https://cyberblogspot.com/how-to-install-esptool-on-windows-10/), [generic instructions](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html))
 - ESPHome image
 
@@ -91,7 +92,7 @@ logger:
 wifi:
   # Wifi credentials are stored securely by new device wizard.
   ssid: !secret wifi_ssid
-  password: !secret wifi_pasword
+  password: !secret wifi_password
 
 preferences:
   # the default of 1min is far too short--flash chip is rated
@@ -244,6 +245,51 @@ Note the `sliding_window_moving_average`. This is optional, but since we get a r
 
 Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
 
+To configure energy returned to the grid for NET metering ( [more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
+```
+sensor:
+  - platform: emporia_vue
+    ct_clamps:
+      - phase_id: phase_a
+        input: "A"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase A Power Return"
+          id: phase_a_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase A
+      - phase_id: phase_b
+        input: "B"  # Verify the CT going to this device input also matches the phase/leg
+        power:
+          name: "Phase B Power Return"
+          id: phase_b_power_return
+          device_class: power
+          filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase B
+  - platform: template
+    name: "Total Power Return"
+    lambda: return id(phase_a_power_return).state + id(phase_b_power_return).state;
+    update_interval: 1s
+    id: total_power_return
+    unit_of_measurement: "W"
+  - platform: total_daily_energy
+    name: "Total Daily Energy Return"
+    power_id: total_power_return
+    accuracy_decimals: 0
+
+```
+Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clapms 15 and 16:
+```
+sensor:
+  - platform: template
+    name: "Solar Power"
+    lambda: return id(cir15).state + id(cir16).state;
+    id: solar_power
+    unit_of_measurement: "W"
+  - platform: total_daily_energy
+    name: "Solar Daily Energy"
+    power_id: solar_power
+    accuracy_decimals: 0
+```
+
 Do not use the `web_server` since it is not compatible with the `esp-idf` framework, and you will get odd error messages.
 
 It's not too critical to get this right on the first try, because you can update the board over WiFi using [the ESPHome Dashboard](https://esphome.io/guides/getting_started_command_line.html#bonus-esphome-dashboard).
@@ -342,4 +388,4 @@ You'll see an error like
 Could not find the package with 'platformio/toolchain-esp32ulp @ ~1.22851.0' requirements for your system 'linux_aarch64'
 ```
 
-You can try using a different computer. 32-bit and 64-bit x86 computers are both compatible (most laptops & desktops). 
+You can try using a different computer. 32-bit and 64-bit x86 computers are both compatible (most laptops & desktops).
