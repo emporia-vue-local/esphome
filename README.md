@@ -289,7 +289,6 @@ sensor:
     power_id: solar_power
     accuracy_decimals: 0
 ```
-If you made errors in your configuration and your template sensors recorded strange values in home-assistant, you can reset all sensors by implementing a [factory reset button](https://esphome.io/components/button/factory_reset.html).
 
 Do not use the `web_server` since it is not compatible with the `esp-idf` framework, and you will get odd error messages.
 
@@ -351,6 +350,10 @@ There's now support for MQTT with this integration thanks to the hard work of th
 
 - You may have put that clamp on the wire backwards
 - You may have selected the wrong phase in the configuration
+
+### I've recorded negative energy values and I want to reset them
+
+Sensor values are saved to the esp32 flash. You can reset all sensors by implementing a [factory reset button](https://esphome.io/components/button/factory_reset.html).
 
 ### The readings on one or two of my sensors are crazy
 
