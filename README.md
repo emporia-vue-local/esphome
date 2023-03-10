@@ -245,7 +245,7 @@ Note the `sliding_window_moving_average`. This is optional, but since we get a r
 
 Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
 
-To configure energy returned to the grid for NET metering ( [more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
+To configure energy returned to the grid for NET metering ([more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
 ```
 sensor:
   - platform: emporia_vue
@@ -276,7 +276,7 @@ sensor:
     accuracy_decimals: 0
 
 ```
-Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clapms 15 and 16:
+Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clamps 15 and 16:
 ```
 sensor:
   - platform: template
@@ -289,6 +289,7 @@ sensor:
     power_id: solar_power
     accuracy_decimals: 0
 ```
+If you made errors in your configuration and your template sensors recorded strange values in home-assistant, you can reset all sensors by implementing a [factory reset button](https://esphome.io/components/button/factory_reset.html).
 
 Do not use the `web_server` since it is not compatible with the `esp-idf` framework, and you will get odd error messages.
 
