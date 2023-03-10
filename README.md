@@ -245,7 +245,7 @@ Note the `sliding_window_moving_average`. This is optional, but since we get a r
 
 Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
 
-To configure energy returned to the grid for NET metering ( [more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
+To configure energy returned to the grid for NET metering ([more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
 ```
 sensor:
   - platform: emporia_vue
@@ -276,7 +276,7 @@ sensor:
     accuracy_decimals: 0
 
 ```
-Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clapms 15 and 16:
+Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clamps 15 and 16:
 ```
 sensor:
   - platform: template
@@ -350,6 +350,10 @@ There's now support for MQTT with this integration thanks to the hard work of th
 
 - You may have put that clamp on the wire backwards
 - You may have selected the wrong phase in the configuration
+
+### I've recorded negative energy values and I want to reset them
+
+Sensor values are saved to the esp32 flash. You can reset all sensors by implementing a [factory reset button](https://esphome.io/components/button/factory_reset.html).
 
 ### The readings on one or two of my sensors are crazy
 
