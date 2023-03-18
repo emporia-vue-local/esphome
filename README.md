@@ -322,7 +322,7 @@ If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0
 
 ### Flashing new software
 
-With your other hand, run the following in the console: `esphome run vue2.yaml`. This will take a few minutes, and install the new software on the Vue 2!
+With your other hand, kick off the upload process. If you're using the command-line, `esphome run <yourfilename>.yaml`, otherwise click the button in the GUI. This will take a few minutes and install the new software on the Vue 2!
 
 You'll see a bunch of errors like `Failed to read from sensor due to I2C error 3`, but that's fine, since they'll go away when it is installed into into the wall.
 
