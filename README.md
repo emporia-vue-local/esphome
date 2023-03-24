@@ -51,7 +51,8 @@ For the wiring harness, you'll want to make a note of which color cable matches 
 
 ## Writing configuration
 
-Here's a starting point for a configuration:
+Here's a starting point for a configuration, save it to `<yourfilename>.yaml` into project folder:
+
 ```
 esphome:
   name: emporiavue2
