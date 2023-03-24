@@ -384,7 +384,9 @@ When you're done troubleshooting, remember to place the filters back.
 
 ### I'm using a 64-bit Pi & can't compile!
 
-If you're using a 64-bit ARM OS, unfortunately you are unable to build this. It's not a limitation with this project, but a limitation with the upstream PlatformIO toolchains.
+Some users have successfully managed to build this on a 64-bit Pi: https://github.com/emporia-vue-local/esphome/discussions/147
+
+~If you're using a 64-bit ARM OS, unfortunately you are unable to build this. It's not a limitation with this project, but a limitation with the upstream PlatformIO toolchains.~
 
 You'll see an error like
 
