@@ -21,16 +21,17 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 </details>
 
 # Setting up Emporia Vue 2 with ESPHome
+
 ![example of hass setup](https://i.imgur.com/hC26j2M.png)
 
 ## What you need
 
 - USB to serial converter module
-    - I tested this with a cheap & generic CH340G adapter
+  - I tested this with a cheap & generic CH340G adapter
 - 4 male-to-female jumper wires
 - 4 male pcb-mount headers
 - Soldering iron & accessories
-    - [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
+  - [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
 - [esptool.py](https://github.com/espressif/esptool) ([windows instructions](https://cyberblogspot.com/how-to-install-esptool-on-windows-10/), [generic instructions](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html))
 - ESPHome image
 
@@ -213,12 +214,39 @@ sensor:
   - platform: template
     name: "Total Power"
     lambda: return id(phase_a_power).state + id(phase_b_power).state;
-    update_interval: 1s
+    update_interval: 2.88s
     id: total_power
     unit_of_measurement: "W"
   - platform: total_daily_energy
     name: "Total Daily Energy"
     power_id: total_power
+    accuracy_decimals: 0
+  - platform: template
+    name: "Balance Power"
+    lambda: !lambda |-
+      return max(0.0f, id(total_power).state -
+        id( cir1).state -
+        id( cir2).state -
+        id( cir3).state -
+        id( cir4).state -
+        id( cir5).state -
+        id( cir6).state -
+        id( cir7).state -
+        id( cir8).state -
+        id( cir9).state -
+        id(cir10).state -
+        id(cir11).state -
+        id(cir12).state -
+        id(cir13).state -
+        id(cir14).state -
+        id(cir15).state -
+        id(cir16).state);
+    update_interval: 2.88s
+    id: balance_power
+    unit_of_measurement: "W"
+  - platform: total_daily_energy
+    name: "Balance Daily Energy"
+    power_id: balance_power
     accuracy_decimals: 0
   - { power_id:  cir1, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 1 Daily Energy" }
   - { power_id:  cir2, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 2 Daily Energy" }
@@ -240,13 +268,14 @@ sensor:
 
 You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` with a unique password, and your wifi credentials, respectively.
 
-You'll also want to update the `sensor` section of the configuration using the information you've collected in *Panel installation, part 1*.
+You'll also want to update the `sensor` section of the configuration using the information you've collected in _Panel installation, part 1_.
 
 Note the `sliding_window_moving_average`. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant.
 
 Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
 
 To configure energy returned to the grid for NET metering ([more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
+
 ```
 sensor:
   - platform: emporia_vue
@@ -277,7 +306,9 @@ sensor:
     accuracy_decimals: 0
 
 ```
+
 Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clamps 15 and 16:
+
 ```
 sensor:
   - platform: template
@@ -317,7 +348,7 @@ If your TTL adapter has both the DTR and RTS pins exposed, you can let it automa
 
 ### Doing a backup
 
-With your other hand, run the following in the console: `esptool.py -b 921600 read_flash 0 0x800000 flash_contents.bin`. Successful completion of this step is *critical* in case something goes wrong later. This file is necessary to restore the device to factory function.
+With your other hand, run the following in the console: `esptool.py -b 921600 read_flash 0 0x800000 flash_contents.bin`. Successful completion of this step is _critical_ in case something goes wrong later. This file is necessary to restore the device to factory function.
 
 If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`.
 
@@ -379,7 +410,7 @@ If your data is hovering around 0, then you either don't have any load on that c
 If you're seeing negative data, it could be a few things:
 
 - First off, make sure you've properly installed the clamps according to the instructions. The L side of the clamp should point towards the load. For solar systems or similar, keep in mind that current flows from the solar panel to your electrical panel, not the other way.
-- Make sure you've selected the correct phase in the configuration. You will get negative *and* nonsense power readings if you select the wrong phase. You can't negate the data through a filter and expect it to be correct.
+- Make sure you've selected the correct phase in the configuration. You will get negative _and_ nonsense power readings if you select the wrong phase. You can't negate the data through a filter and expect it to be correct.
 
 When you're done troubleshooting, remember to place the filters back.
 
