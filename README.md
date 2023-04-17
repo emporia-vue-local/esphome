@@ -224,43 +224,23 @@ sensor:
   - platform: template
     name: "Balance Power"
     lambda: !lambda |-
-      if (id(total_power).state
-        - id(cir2).state
-        - id(cir6).state
-        - id(cir12).state
-        - id(cir14).state
-        - id(cir16).state
-        - id(cir20).state
-        - id(cir22).state
-        - id(cir26).state
-        - id(cir23).state
-        - id(cir21).state
-        - id(cir19).state
-        - id(cir17).state
-        - id(cir13).state
-        - id(cir11).state
-        - id(cir9).state
-        - id(cir1).state > 0) {
-        return id(total_power).state
-        - id(cir2).state
-        - id(cir6).state
-        - id(cir12).state
-        - id(cir14).state
-        - id(cir16).state
-        - id(cir20).state
-        - id(cir22).state
-        - id(cir26).state
-        - id(cir23).state
-        - id(cir21).state
-        - id(cir19).state
-        - id(cir17).state
-        - id(cir13).state
-        - id(cir11).state
-        - id(cir9).state
-        - id(cir1).state;
-      } else {
-        return 0.0;
-      }
+      return max(0.0f, id(total_power).state -
+        id( cir1).state -
+        id( cir2).state -
+        id( cir3).state -
+        id( cir4).state -
+        id( cir5).state -
+        id( cir6).state -
+        id( cir7).state -
+        id( cir8).state -
+        id( cir9).state -
+        id(cir10).state -
+        id(cir11).state -
+        id(cir12).state -
+        id(cir13).state -
+        id(cir14).state -
+        id(cir15).state -
+        id(cir16).state);
     update_interval: 2.88s
     id: balance_power
     unit_of_measurement: "W"
