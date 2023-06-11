@@ -7,6 +7,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-06-11: fix buzzer with GND, move LED to HA config section, add template classes
 - 2023-03-08: configuration example for net metering
 - 2023-02-20: update style to modern home assistant, add buzzer support, add led support
 - 2023-01-28: add frequency support
@@ -105,6 +106,9 @@ output:
   - platform: ledc
     pin: GPIO12
     id: buzzer
+  - platform: gpio
+    pin: GPIO27
+    id: buzzer_gnd
 
 rtttl:
   output: buzzer
@@ -122,6 +126,7 @@ light:
     name: "D3_LED"
     pin: 23
     restore_mode: ALWAYS_ON
+    entity_category: config
 
 i2c:
   sda: 21
@@ -185,14 +190,12 @@ sensor:
         power:
           name: "Phase A Power"
           id: phase_a_power
-          device_class: power
           filters: [*moving_avg, *pos]
       - phase_id: phase_b
         input: "B"  # Verify the CT going to this device input also matches the phase/leg
         power:
           name: "Phase B Power"
           id: phase_b_power
-          device_class: power
           filters: [*moving_avg, *pos]
       # Pay close attention to set the phase_id for each breaker by matching it to the phase/leg it connects to in the panel
       - { phase_id: phase_a, input:  "1", power: { name:  "Circuit 1 Power", id:  cir1, filters: [ *moving_avg, *pos ] } }
@@ -216,6 +219,8 @@ sensor:
     lambda: return id(phase_a_power).state + id(phase_b_power).state;
     update_interval: 2.88s
     id: total_power
+    device_class: power
+    state_class: measurement
     unit_of_measurement: "W"
   - platform: total_daily_energy
     name: "Total Daily Energy"
@@ -243,6 +248,8 @@ sensor:
         id(cir16).state);
     update_interval: 2.88s
     id: balance_power
+    device_class: power
+    state_class: measurement
     unit_of_measurement: "W"
   - platform: total_daily_energy
     name: "Balance Daily Energy"
@@ -285,20 +292,20 @@ sensor:
         power:
           name: "Phase A Power Return"
           id: phase_a_power_return
-          device_class: power
           filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase A
       - phase_id: phase_b
         input: "B"  # Verify the CT going to this device input also matches the phase/leg
         power:
           name: "Phase B Power Return"
           id: phase_b_power_return
-          device_class: power
           filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase B
   - platform: template
     name: "Total Power Return"
     lambda: return id(phase_a_power_return).state + id(phase_b_power_return).state;
     update_interval: 1s
     id: total_power_return
+    device_class: power
+    state_class: measurement
     unit_of_measurement: "W"
   - platform: total_daily_energy
     name: "Total Daily Energy Return"
@@ -315,6 +322,8 @@ sensor:
     name: "Solar Power"
     lambda: return id(cir15).state + id(cir16).state;
     id: solar_power
+    device_class: power
+    state_class: measurement
     unit_of_measurement: "W"
   - platform: total_daily_energy
     name: "Solar Daily Energy"
