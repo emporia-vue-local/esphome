@@ -40,8 +40,6 @@ class CTClampConfig;
 
 class EmporiaVueComponent : public PollingComponent, public i2c::I2CDevice {
  public:
-  EmporiaVueComponent() : PollingComponent(240 /* ms */) {}
-
   void dump_config() override;
 
   float get_setup_priority() const override { return esphome::setup_priority::HARDWARE; }

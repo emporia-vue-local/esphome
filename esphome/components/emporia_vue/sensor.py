@@ -33,7 +33,7 @@ AUTO_LOAD = ["sensor"]
 
 emporia_vue_ns = cg.esphome_ns.namespace("emporia_vue")
 EmporiaVueComponent = emporia_vue_ns.class_(
-    "EmporiaVueComponent", cg.Component, i2c.I2CDevice
+    "EmporiaVueComponent", cg.PollingComponent, i2c.I2CDevice
 )
 PhaseConfig = emporia_vue_ns.class_("PhaseConfig")
 CTClampConfig = emporia_vue_ns.class_("CTClampConfig")
@@ -150,7 +150,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_CT_CLAMPS): cv.ensure_list(SCHEMA_CT_CLAMP),
         },
     )
-    .extend(cv.COMPONENT_SCHEMA)
+    .extend(cv.polling_component_schema("240ms"))
     .extend(i2c.i2c_device_schema(0x64)),
     cv.only_with_esp_idf,
     cv.only_on_esp32,
