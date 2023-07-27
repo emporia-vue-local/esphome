@@ -163,6 +163,7 @@ time:
 sensor:
   - platform: emporia_vue
     i2c_id: i2c_a
+    update_interval: 240ms  # If you have a revision 5 Emporia Vue 2, use 500ms instead
     phases:
       - id: phase_a  # Verify that this specific phase/leg is connected to correct input wire color on device listed below
         input: BLACK  # Vue device wire color
