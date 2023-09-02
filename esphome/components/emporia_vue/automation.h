@@ -4,7 +4,6 @@
 
 #include "emporia_vue.h"
 
-#include "esphome/core/component.h"
 #include "esphome/core/automation.h"
 
 namespace esphome {
