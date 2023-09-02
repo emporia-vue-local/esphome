@@ -146,8 +146,8 @@ time:
     # average all raw readings together over a 5 second span before publishing
     throttle_average: 5s
   - &throttle_time
-    # only send the most recent measurement every 5 seconds
-    throttle: 5s
+    # only send the most recent measurement every 60 seconds
+    throttle: 60s
   - &invert
     # invert and filter out any values below 0.
     lambda: 'return max(-x, 0.0f);'
