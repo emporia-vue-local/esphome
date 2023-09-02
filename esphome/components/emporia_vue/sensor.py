@@ -217,7 +217,7 @@ async def to_code(config):
 
         ct_clamps.append(ct_clamp_var)
     cg.add(var.set_ct_clamps(ct_clamps))
-    
+
     for trigger_conf in config.get(CONF_ON_UPDATE, []):
         trigger = cg.new_Pvariable(trigger_conf[CONF_TRIGGER_ID], var)
         await automation.build_automation(trigger, [], trigger_conf )
