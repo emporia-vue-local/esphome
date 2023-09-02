@@ -214,8 +214,10 @@ sensor:
       then:
         - component.update: total_power
         - component.update: balance_power
-  - { platform: copy, name: "Phate A Power", source_id: phase_a_power, filters: *throttle_avg }
-  - { platform: copy, name: "Phate B Power", source_id: phase_b_power, filters: *throttle_avg }
+  - { platform: copy, name: "Phase A Power", source_id: phase_a_power, filters: *throttle_avg }
+  - { platform: copy, name: "Phase B Power", source_id: phase_b_power, filters: *throttle_avg }
+  - { platform: copy, name: "Total Power", source_id: total_power, filters: *throttle_avg }
+  - { platform: copy, name: "Balance Power", source_id: balance_power, filters: *throttle_avg }
   - { platform: copy, name:  "Circuit 1 Power", source_id:  cir1, filters: *throttle_avg }
   - { platform: copy, name:  "Circuit 2 Power", source_id:  cir2, filters: *throttle_avg }
   - { platform: copy, name:  "Circuit 3 Power", source_id:  cir3, filters: *throttle_avg }
@@ -231,23 +233,20 @@ sensor:
   - { platform: copy, name: "Circuit 13 Power", source_id: cir13, filters: *throttle_avg }
   - { platform: copy, name: "Circuit 14 Power", source_id: cir14, filters: *throttle_avg }
   - { platform: copy, name: "Circuit 15 Power", source_id: cir15, filters: *throttle_avg }
-  - { platform: copy, name: "Circuit 16 Power", source_id: cir16, filters: *throttle_avg }        
+  - { platform: copy, name: "Circuit 16 Power", source_id: cir16, filters: *throttle_avg }     
   - platform: template
-    name: "Total Power"
     lambda: return id(phase_a_power).state + id(phase_b_power).state;
     update_interval: never
     id: total_power
     device_class: power
     state_class: measurement
     unit_of_measurement: "W"
-    filters: *throttle_avg
   - platform: total_daily_energy
     name: "Total Daily Energy"
     power_id: total_power
     accuracy_decimals: 0
     filters: *throttle_time
   - platform: template
-    name: "Balance Power"
     lambda: !lambda |-
       return max(0.0f, id(total_power).state -
         id( cir1).state -
@@ -271,7 +270,6 @@ sensor:
     device_class: power
     state_class: measurement
     unit_of_measurement: "W"
-    filters: *throttle_avg
   - platform: total_daily_energy
     name: "Balance Daily Energy"
     power_id: balance_power
