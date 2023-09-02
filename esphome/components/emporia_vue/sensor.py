@@ -1,4 +1,5 @@
 from esphome.components import sensor, i2c
+from esphome import automation
 import esphome.config_validation as cv
 import esphome.codegen as cg
 from esphome.const import (
@@ -7,6 +8,7 @@ from esphome.const import (
     CONF_ID,
     CONF_INPUT,
     CONF_POWER,
+    CONF_TRIGGER_ID,
     CONF_VOLTAGE,
     CONF_FREQUENCY,
     CONF_PHASE_ANGLE,
@@ -26,6 +28,8 @@ CONF_CT_CLAMPS = "ct_clamps"
 CONF_PHASES = "phases"
 CONF_PHASE_ID = "phase_id"
 
+CONF_ON_UPDATE = "on_update"
+
 CODEOWNERS = ["@flaviut", "@Maelstrom96", "@krconv"]
 ESP_PLATFORMS = ["esp-idf"]
 DEPENDENCIES = ["i2c"]
@@ -37,6 +41,12 @@ EmporiaVueComponent = emporia_vue_ns.class_(
 )
 PhaseConfig = emporia_vue_ns.class_("PhaseConfig")
 CTClampConfig = emporia_vue_ns.class_("CTClampConfig")
+
+# Trigger for after statistics sensors are updated
+EmporiaVueUpdateTrigger = emporia_vue_ns.class_(
+    "EmporiaVueUpdateTrigger", automation.Trigger.template()
+)
+
 
 PhaseInputWire = emporia_vue_ns.enum("PhaseInputWire")
 PHASE_INPUT = {
@@ -148,6 +158,13 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(): cv.declare_id(EmporiaVueComponent),
             cv.Required(CONF_PHASES): validate_phases,
             cv.Required(CONF_CT_CLAMPS): cv.ensure_list(SCHEMA_CT_CLAMP),
+            cv.Optional(CONF_ON_UPDATE): automation.validate_automation(
+                {
+                    cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(
+                        EmporiaVueUpdateTrigger
+                    ),
+                }
+            ),
         },
     )
     .extend(cv.polling_component_schema("0ms"))
@@ -200,3 +217,7 @@ async def to_code(config):
 
         ct_clamps.append(ct_clamp_var)
     cg.add(var.set_ct_clamps(ct_clamps))
+    
+    for trigger_conf in config.get(CONF_ON_UPDATE, []):
+        trigger = cg.new_Pvariable(trigger_conf[CONF_TRIGGER_ID], var)
+        await automation.build_automation(trigger, [], trigger_conf )

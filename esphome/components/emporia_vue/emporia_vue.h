@@ -49,10 +49,13 @@ class EmporiaVueComponent : public PollingComponent, public i2c::I2CDevice {
 
   void update() override;
 
+  void add_on_update_callback(std::function<void()> &&callback);  
+
  protected:
   uint8_t last_sequence_num_ = 0;
   std::vector<PhaseConfig *> phases_;
   std::vector<CTClampConfig *> ct_clamps_;
+  CallbackManager<void()> callback_;  
 };
 
 enum PhaseInputWire : uint8_t {
@@ -83,7 +86,7 @@ class PhaseConfig {
   float calibration_;
   sensor::Sensor *voltage_sensor_{nullptr};
   sensor::Sensor *frequency_sensor_{nullptr};
-  sensor::Sensor *phase_angle_sensor_{nullptr};
+  sensor::Sensor *phase_angle_sensor_{nullptr}; 
 };
 
 enum CTInputPort : uint8_t {
