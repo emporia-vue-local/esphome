@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef USE_ESP32
+
 #include "emporia_vue.h"
 
 #include "esphome/core/component.h"
@@ -18,3 +20,5 @@ class EmporiaVueUpdateTrigger : public Trigger<> {
 
 }  // namespace statistics
 }  // namespace esphome
+
+#endif // ifdef USE_ESP32
