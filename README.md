@@ -233,7 +233,7 @@ sensor:
   - { platform: copy, name: "Circuit 13 Power", source_id: cir13, filters: *throttle_avg }
   - { platform: copy, name: "Circuit 14 Power", source_id: cir14, filters: *throttle_avg }
   - { platform: copy, name: "Circuit 15 Power", source_id: cir15, filters: *throttle_avg }
-  - { platform: copy, name: "Circuit 16 Power", source_id: cir16, filters: *throttle_avg }     
+  - { platform: copy, name: "Circuit 16 Power", source_id: cir16, filters: *throttle_avg }
   - platform: template
     lambda: return id(phase_a_power).state + id(phase_b_power).state;
     update_interval: never
