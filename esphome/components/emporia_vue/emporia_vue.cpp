@@ -75,6 +75,12 @@ void EmporiaVueComponent::update() {
   }
 
   this->last_sequence_num_ = sensor_reading.sequence_num;
+
+  this->callback_.call();
+}
+
+void EmporiaVueComponent::add_on_update_callback(std::function<void()> &&callback) {
+  this->callback_.add(std::move(callback));
 }
 
 void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
