@@ -236,7 +236,7 @@ sensor:
   - { platform: copy, name: "Circuit 16 Power", source_id: cir16, filters: *throttle_avg }
   - platform: template
     lambda: return id(phase_a_power).state + id(phase_b_power).state;
-    update_interval: never
+    update_interval: never   # will be updated after all power sensors update via on_update trigger
     id: total_power
     device_class: power
     state_class: measurement
@@ -265,7 +265,7 @@ sensor:
         id(cir14).state -
         id(cir15).state -
         id(cir16).state);
-    update_interval: never
+    update_interval: never   # will be updated after all power sensors update via on_update trigger
     id: balance_power
     device_class: power
     state_class: measurement
