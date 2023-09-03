@@ -7,6 +7,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-09-03: revamp configuration for improved accuracy, thanks to [adam](https://www.technowizardry.net/2023/02/local-energy-monitoring-using-the-emporia-vue-2/) and [@kahrendt](https://github.com/kahrendt)
 - 2023-06-11: fix buzzer with GND, move LED to HA config section, add template classes
 - 2023-03-08: configuration example for net metering
 - 2023-02-20: update style to modern home assistant, add buzzer support, add led support
