@@ -90,8 +90,10 @@ ota:
   # Create a secure password for pushing OTA updates.
   password: "<secure_password>"
 
-# Enable logging
+# Enable logging of warnings
 logger:
+  baud_rate: 0  # disable sending logs over UART
+  level: WARN
 
 wifi:
   # Wifi credentials are stored securely by new device wizard.
