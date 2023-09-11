@@ -7,6 +7,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-09-11: reduce logging verbosity
 - 2023-09-03: revamp configuration for improved accuracy, thanks to [adam](https://www.technowizardry.net/2023/02/local-energy-monitoring-using-the-emporia-vue-2/) and [@kahrendt](https://github.com/kahrendt)
 - 2023-06-11: fix buzzer with GND, move LED to HA config section, add template classes
 - 2023-03-08: configuration example for net metering
@@ -92,6 +93,10 @@ ota:
 
 # Enable logging
 logger:
+  logs:
+    # by default, every reading will be printed to the UART, which is very slow
+    # This will disable printing the readings but keep other helpful messages
+    sensor: INFO
 
 wifi:
   # Wifi credentials are stored securely by new device wizard.
