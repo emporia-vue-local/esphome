@@ -57,7 +57,7 @@ For the wiring harness, you'll want to make a note of which color cable matches 
 
 Here's a starting point for a configuration, save it to `<yourfilename>.yaml` into project folder:
 
-```
+```yaml
 esphome:
   name: emporiavue2
   friendly_name: vue2
@@ -309,7 +309,7 @@ Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This
 
 To configure energy returned to the grid for NET metering ([more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
 
-```
+```yaml
 sensor:
   - platform: emporia_vue
     ct_clamps:
@@ -342,7 +342,7 @@ sensor:
 
 Your solar sensors' configuration depends on your setup (single phase, split phase, 3-phase). The following example shows a split-phase installation using ct clamps 15 and 16:
 
-```
+```yaml
 sensor:
   - platform: template
     name: "Solar Power"
