@@ -303,7 +303,7 @@ You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` wi
 
 You'll also want to update the `sensor` section of the configuration using the information you've collected in _Panel installation, part 1_.
 
-Note the `sliding_window_moving_average`. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant.
+Note the `throttle_avg`. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant.
 
 Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
 
