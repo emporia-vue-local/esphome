@@ -318,13 +318,13 @@ sensor:
         power:
           name: "Phase A Power Return"
           id: phase_a_power_return
-          filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase A
+          filters: [*throttle_avg, *invert]  # This measures energy uploaded to grid on phase A
       - phase_id: phase_b
         input: "B"  # Verify the CT going to this device input also matches the phase/leg
         power:
           name: "Phase B Power Return"
           id: phase_b_power_return
-          filters: [*moving_avg, *invert]  # This measures energy uploaded to grid on phase B
+          filters: [*throttle_avg, *invert]  # This measures energy uploaded to grid on phase B
   - platform: template
     name: "Total Power Return"
     lambda: return id(phase_a_power_return).state + id(phase_b_power_return).state;
@@ -438,7 +438,7 @@ If the readings are significant outside of that, there may be a problem.
 
 ### I'm seeing zeros on certain current clamps
 
-First off, you will want to remove all filters for that sensor. Replace `filters: [ *moving_avg, *pos ]`, etc, with `filters: []`.
+First off, you will want to remove all filters for that sensor. Replace `filters: [ *throttle_avg, *pos ]`, etc, with `filters: []`.
 
 If your data is hovering around 0, then you either don't have any load on that circuit or there's some other issue that hasn't come up before.
 
