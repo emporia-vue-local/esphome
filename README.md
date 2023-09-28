@@ -189,6 +189,9 @@ sensor:
           name: "Phase B Phase Angle"
           filters: [*throttle_avg, *pos]
     ct_clamps:
+      # Do not specify a name for any of the power sensors here, only an id. This leaves the power sensors internal to ESPHome.
+      # Copy sensors will filter and then send power measurements to HA
+      # These non-throttled power sensors are used for accurately calculating energy
       - phase_id: phase_a
         input: "A"  # Verify the CT going to this device input also matches the phase/leg
         power:
@@ -220,6 +223,7 @@ sensor:
       then:
         - component.update: total_power
         - component.update: balance_power
+  # The copy sensors filter and send the power state to HA
   - { platform: copy, name: "Phase A Power", source_id: phase_a_power, filters: *throttle_avg }
   - { platform: copy, name: "Phase B Power", source_id: phase_b_power, filters: *throttle_avg }
   - { platform: copy, name: "Total Power", source_id: total_power, filters: *throttle_avg }
