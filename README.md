@@ -1,12 +1,11 @@
 For issues, please go to [the discussion board](https://github.com/emporia-vue-local/esphome/discussions).
 
-⚠️NOTICE⚠️: If you have already flashed your device with a previous version of the config, I'd strongly encourage you to add `flash_write_interval: "48h"` from below to your config to preserve the flash memory's health and your ability to update the device in the future.
-
 **ESPHome Documentation:** https://esphome.io/
 
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-10-31: remove warning about flash, see https://github.com/emporia-vue-local/esphome/discussions/227#discussioncomment-7412125
 - 2023-09-11: reduce logging verbosity
 - 2023-09-03: revamp configuration for improved accuracy, thanks to [adam](https://www.technowizardry.net/2023/02/local-energy-monitoring-using-the-emporia-vue-2/) and [@kahrendt](https://github.com/kahrendt)
 - 2023-06-11: fix buzzer with GND, move LED to HA config section, add template classes
