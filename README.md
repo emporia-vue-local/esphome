@@ -5,6 +5,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2023-11-01: suggest setting `restore: false`
 - 2023-10-31: remove warning about flash, see https://github.com/emporia-vue-local/esphome/discussions/227#discussioncomment-7412125
 - 2023-09-11: reduce logging verbosity
 - 2023-09-03: revamp configuration for improved accuracy, thanks to [adam](https://www.technowizardry.net/2023/02/local-energy-monitoring-using-the-emporia-vue-2/) and [@kahrendt](https://github.com/kahrendt)
@@ -103,8 +104,8 @@ wifi:
   password: !secret wifi_password
 
 preferences:
-  # the default of 1min is far too short--flash chip is rated
-  # for approx 100k writes.
+  # please also make sure `restore: false` is set on all `platform: total_daily_energy`
+  # sensors below.
   flash_write_interval: "48h"
 
 output:
@@ -254,6 +255,7 @@ sensor:
     name: "Total Daily Energy"
     power_id: total_power
     accuracy_decimals: 0
+    restore: false
     filters: *throttle_time
   - platform: template
     lambda: !lambda |-
@@ -283,23 +285,24 @@ sensor:
     name: "Balance Daily Energy"
     power_id: balance_power
     accuracy_decimals: 0
+    restore: false
     filters: *throttle_time
-  - { power_id:  cir1, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 1 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir2, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 2 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir3, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 3 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir4, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 4 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir5, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 5 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir6, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 6 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir7, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 7 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir8, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 8 Daily Energy", filters: *throttle_time }
-  - { power_id:  cir9, platform: total_daily_energy, accuracy_decimals: 0, name:  "Circuit 9 Daily Energy", filters: *throttle_time }
-  - { power_id: cir10, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 10 Daily Energy", filters: *throttle_time }
-  - { power_id: cir11, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 11 Daily Energy", filters: *throttle_time }
-  - { power_id: cir12, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 12 Daily Energy", filters: *throttle_time }
-  - { power_id: cir13, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 13 Daily Energy", filters: *throttle_time }
-  - { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 14 Daily Energy", filters: *throttle_time }
-  - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 15 Daily Energy", filters: *throttle_time }
-  - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, name: "Circuit 16 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir1, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 1 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir2, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 2 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir3, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 3 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir4, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 4 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir5, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 5 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir6, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 6 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir7, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 7 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir8, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 8 Daily Energy", filters: *throttle_time }
+  - { power_id:  cir9, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "Circuit 9 Daily Energy", filters: *throttle_time }
+  - { power_id: cir10, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 10 Daily Energy", filters: *throttle_time }
+  - { power_id: cir11, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 11 Daily Energy", filters: *throttle_time }
+  - { power_id: cir12, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 12 Daily Energy", filters: *throttle_time }
+  - { power_id: cir13, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 13 Daily Energy", filters: *throttle_time }
+  - { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 14 Daily Energy", filters: *throttle_time }
+  - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 15 Daily Energy", filters: *throttle_time }
+  - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 16 Daily Energy", filters: *throttle_time }
 ```
 
 You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` with a unique password, and your wifi credentials, respectively.
