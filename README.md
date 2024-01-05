@@ -36,7 +36,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 - Soldering iron & accessories
   - [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
 - [esptool.py](https://github.com/espressif/esptool) ([windows instructions](https://cyberblogspot.com/how-to-install-esptool-on-windows-10/), [generic instructions](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html))
-- ESPHome image
+- Working ESPHome installation [(see "Getting started")](https://esphome.io/)
 
 ## Panel installation, part 1
 
