@@ -391,7 +391,7 @@ If your TTL adapter has both the DTR and RTS pins exposed, you can let it automa
 
 With your other hand, run the following in the console: `esptool.py -b 921600 read_flash 0 0x800000 flash_contents.bin`. Successful completion of this step is _critical_ in case something goes wrong later. This file is necessary to restore the device to factory function.
 
-If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`.
+If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`. If you're using an Apple Silicon (M1, M2, etc) CPU and it stops working after a certain percentage every time, try using a different machine
 
 ### Flashing new software
 
