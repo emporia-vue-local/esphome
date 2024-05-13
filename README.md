@@ -369,7 +369,7 @@ It's not too critical to get this right on the first try, because you can update
 
 ## Backing up & flashing the Vue 2
 
-**⚠️ Do not power your Vue by mains when doing this flashing! It will not work & is deadly. Only connect your Vue to the mains with the enclosure closed. ⚠️**
+**⚠️⚡ Do not power your Vue by mains when doing this flashing! It will not work & is deadly. Only connect your Vue to the mains with the enclosure closed. ⚡⚠️**
 
 Pry the lever on one of the jumper cables up using a pencil or a needle or some other sharp thing. If your cables don't have a lever, cut one end of the cable & strip it using scissors or a knife.
 ![prying the lever on the jumper cable](https://i.imgur.com/BZJGdKq.jpg)![separated cable](https://i.imgur.com/eOc29M7.jpg)
