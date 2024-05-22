@@ -72,6 +72,8 @@ class PhaseConfig {
   float get_calibration() const { return this->calibration_; }
   void set_voltage_sensor(sensor::Sensor *voltage_sensor) { this->voltage_sensor_ = voltage_sensor; }
   sensor::Sensor *get_voltage_sensor() const { return this->voltage_sensor_; }
+  void set_frequency_calibration(float calibration) { this->frequency_calibration_ = calibration; }
+  float get_freqency_calibration() const { return this->frequency_calibration_; }
   void set_frequency_sensor(sensor::Sensor *frequency_sensor) { this->frequency_sensor_ = frequency_sensor; }
   sensor::Sensor *get_frequency_sensor() const { return this->frequency_sensor_; }
   void set_phase_angle_sensor(sensor::Sensor *phase_angle_sensor) { this->phase_angle_sensor_ = phase_angle_sensor; }
@@ -84,6 +86,7 @@ class PhaseConfig {
  protected:
   PhaseInputWire input_wire_;
   float calibration_;
+  float frequency_calibration_;
   sensor::Sensor *voltage_sensor_{nullptr};
   sensor::Sensor *frequency_sensor_{nullptr};
   sensor::Sensor *phase_angle_sensor_{nullptr};

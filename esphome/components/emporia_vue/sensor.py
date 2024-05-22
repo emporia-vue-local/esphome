@@ -27,6 +27,7 @@ from esphome.const import (
 CONF_CT_CLAMPS = "ct_clamps"
 CONF_PHASES = "phases"
 CONF_PHASE_ID = "phase_id"
+CONF_FREQUENCY_CALIBRATION = "frequency_calibration"
 
 CONF_ON_UPDATE = "on_update"
 
@@ -104,6 +105,7 @@ def validate_phases(val):
                 cv.Required(CONF_ID): cv.declare_id(PhaseConfig),
                 cv.Required(CONF_INPUT): cv.enum(PHASE_INPUT),
                 cv.Optional(CONF_CALIBRATION, default=0.022): cv.zero_to_one_float,
+                cv.Optional(CONF_FREQUENCY_CALIBRATION, default=1.0): cv.zero_to_one_float,
                 cv.Optional(CONF_VOLTAGE): sensor.sensor_schema(
                     unit_of_measurement=UNIT_VOLT,
                     device_class=DEVICE_CLASS_VOLTAGE,
@@ -184,6 +186,7 @@ async def to_code(config):
         phase_var = cg.new_Pvariable(phase_config[CONF_ID], PhaseConfig())
         cg.add(phase_var.set_input_wire(phase_config[CONF_INPUT]))
         cg.add(phase_var.set_calibration(phase_config[CONF_CALIBRATION]))
+        cg.add(phase_var.set_frequency_calibration(phase_config[CONF_FREQUENCY_CALIBRATION]))
 
         if CONF_VOLTAGE in phase_config:
             voltage_sensor = await sensor.new_sensor(phase_config[CONF_VOLTAGE])
