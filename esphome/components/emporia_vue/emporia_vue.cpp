@@ -93,7 +93,7 @@ void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
   // validation that these sensors are allowed on this phase is done in the codegen stage
   if (this->frequency_sensor_) {
     // see https://github.com/emporia-vue-local/esphome/pull/88 for constant explanation
-    float frequency = 25310.0f / (float) raw_frequency;
+    float frequency = 19610.0f / (float) raw_frequency;
     this->frequency_sensor_->publish_state(frequency);
   }
   if (this->phase_angle_sensor_) {
