@@ -25,6 +25,8 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 
 # Setting up Emporia Vue 2 with ESPHome
 
+**Got a Vue 3? [You can install ESPHome local control on it as well!](https://digiblur.com/2024/03/14/emporia-vue-gen3-esp32-esphome-home-assistant/)**
+
 ![example of hass setup](https://i.imgur.com/hC26j2M.png)
 
 ## What you need
