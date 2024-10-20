@@ -6,6 +6,7 @@ namespace esphome {
 namespace emporia_vue {
 
 static const char *const TAG = "emporia_vue";
+static const int ESP_READ_SKIP_ERRORS = 2;
 
 void EmporiaVueComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Emporia Vue");
@@ -49,10 +50,16 @@ void EmporiaVueComponent::update() {
     return;
   }
 
+  static int sensor_reading_end_errorcount = 0;
   if (sensor_reading.end != 0) {
-    ESP_LOGE(TAG, "Failed to read from sensor due to a malformed reading, should end in null bytes but is %d",
-             sensor_reading.end);
+    ++sensor_reading_end_errorcount;
+    if (sensor_reading_end_errorcount > ESP_READ_SKIP_ERRORS) {
+      ESP_LOGE(TAG, "Failed to read from sensor due to a malformed reading, should end in null bytes but is %d",
+               sensor_reading.end);
+    }
     return;
+  } else {
+    sensor_reading_end_errorcount = 0;
   }
 
   if (!sensor_reading.is_unread) {
