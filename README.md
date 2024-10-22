@@ -140,7 +140,8 @@ i2c:
   sda: 21
   scl: 22
   scan: false
-  frequency: 200kHz  # recommended range is 50-200kHz
+  frequency: 400kHz
+  timeout: 1ms
   id: i2c_a
 
 time:
