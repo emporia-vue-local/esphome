@@ -145,7 +145,10 @@ i2c:
   id: i2c_a
 
 time:
-  - platform: sntp
+  # needs some time source to reset daily counters and not accumulate
+  # floating-point issues. If Home Assistant isn't available, use sntp and
+  # set servers and/or DNS as appropriate: https://esphome.io/components/time/sntp.html
+  - platform: homeassistant
     id: my_time
 
 # these are called references in YAML. They allow you to reuse
