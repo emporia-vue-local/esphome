@@ -25,7 +25,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 
 # Setting up Emporia Vue 2 with ESPHome
 
-**Got a Vue 3? [You can install ESPHome local control on it as well!](https://digiblur.com/2024/03/14/emporia-vue-gen3-esp32-esphome-home-assistant/)**
+**Got a Vue 3? [You can install ESPHome local control on it as well!](https://digiblur.com/2024/03/14/emporia-vue-gen3-esp32-esphome-home-assistant/)** Set `variant: vue3` in the `emporia_vue` sensor block when compiling for Gen 3 hardware.
 
 ![example of hass setup](https://i.imgur.com/hC26j2M.png)
 
@@ -172,6 +172,8 @@ time:
 
 sensor:
   - platform: emporia_vue
+    # Set the hardware revision. Default is Vue 2; use "vue3" for the Gen 3 hardware
+    variant: vue2
     i2c_id: i2c_a
     phases:
       - id: phase_a  # Verify that this specific phase/leg is connected to correct input wire color on device listed below
@@ -310,6 +312,8 @@ sensor:
   - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 15 Daily Energy", filters: *throttle_time }
   - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 16 Daily Energy", filters: *throttle_time }
 ```
+
+**Vue 3 hardware:** Change `variant: vue2` above to `variant: vue3` (value is case-insensitive). Vue 2 units can leave the line as-is or delete it entirely to use the default.
 
 You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` with a unique password, and your wifi credentials, respectively.
 

@@ -7,8 +7,19 @@ namespace emporia_vue {
 
 static const char *const TAG = "emporia_vue";
 
+#if defined(EMPORIA_VUE_VARIANT_VUE3)
+static constexpr float EMPORIA_VUE_FREQUENCY_CONSTANT = 19610.0f;
+#else
+static constexpr float EMPORIA_VUE_FREQUENCY_CONSTANT = 25310.0f;
+#endif
+
 void EmporiaVueComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Emporia Vue");
+#if defined(EMPORIA_VUE_VARIANT_VUE3)
+  ESP_LOGCONFIG(TAG, "  Variant: Vue 3");
+#else
+  ESP_LOGCONFIG(TAG, "  Variant: Vue 2");
+#endif
   LOG_I2C_DEVICE(this);
 
   for (auto *phase : this->phases_) {
@@ -83,6 +94,10 @@ void EmporiaVueComponent::add_on_update_callback(std::function<void()> &&callbac
   this->callback_.add(std::move(callback));
 }
 
+static inline bool is_mains_port(CTInputPort port) {
+  return port == CTInputPort::A || port == CTInputPort::B || port == CTInputPort::C;
+}
+
 void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
   if (this->voltage_sensor_) {
     float calibrated_voltage = sensor_reading.voltage[this->input_wire_] * this->calibration_;
@@ -93,7 +108,7 @@ void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
   // validation that these sensors are allowed on this phase is done in the codegen stage
   if (this->frequency_sensor_) {
     // see https://github.com/emporia-vue-local/esphome/pull/88 for constant explanation
-    float frequency = 25310.0f / (float) raw_frequency;
+    float frequency = EMPORIA_VUE_FREQUENCY_CONSTANT / static_cast<float>(raw_frequency);
     this->frequency_sensor_->publish_state(frequency);
   }
   if (this->phase_angle_sensor_) {
@@ -129,7 +144,7 @@ void CTClampConfig::update_from_reading(const SensorReading &sensor_reading) {
     uint16_t raw_current = sensor_reading.current[this->input_port_];
     double raw_current_d = (double) raw_current;
     double scalar;
-    if (this->input_port_ <= CTInputPort::C) {
+    if (is_mains_port(this->input_port_)) {
       scalar = 775.0 / 42624.0;
     } else {
       scalar = 775.0 / 170496.0;

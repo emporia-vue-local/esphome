@@ -90,9 +90,15 @@ class PhaseConfig {
 };
 
 enum CTInputPort : uint8_t {
+#if defined(EMPORIA_VUE_VARIANT_VUE3)
+  A = 2,
+  B = 1,
+  C = 0,
+#else
   A = 0,
   B = 1,
   C = 2,
+#endif
   ONE = 3,
   TWO = 4,
   THREE = 5,
