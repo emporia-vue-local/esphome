@@ -23,7 +23,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 
 </details>
 
-# Setting up Emporia Vue 2 with ESPHome
+# Setting up Emporia Vue 2/3 with ESPHome
 
 **Got a Vue 3? [You can install ESPHome local control on it as well!](https://digiblur.com/2024/03/14/emporia-vue-gen3-esp32-esphome-home-assistant/)** Set `variant: vue3` in the `emporia_vue` sensor block when compiling for Gen 3 hardware.
 
@@ -313,7 +313,7 @@ sensor:
   - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "Circuit 16 Daily Energy", filters: *throttle_time }
 ```
 
-**Vue 3 hardware:** Change `variant: vue2` above to `variant: vue3` (value is case-insensitive). Vue 2 units can leave the line as-is or delete it entirely to use the default.
+**Vue 3 hardware:** Change `variant: vue2` above to `variant: vue3`. Vue 2 units can leave the line as-is or delete it entirely to use the default.
 
 You'll want to replace `<ota password>`, `<wifi ssid>`, and `<wifi password>` with a unique password, and your wifi credentials, respectively.
 
