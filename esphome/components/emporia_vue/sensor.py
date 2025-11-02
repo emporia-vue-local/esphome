@@ -27,6 +27,7 @@ from esphome.const import (
 CONF_CT_CLAMPS = "ct_clamps"
 CONF_PHASES = "phases"
 CONF_PHASE_ID = "phase_id"
+CONF_VARIANT = "variant"
 
 CONF_ON_UPDATE = "on_update"
 
@@ -158,6 +159,7 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(): cv.declare_id(EmporiaVueComponent),
             cv.Required(CONF_PHASES): validate_phases,
             cv.Required(CONF_CT_CLAMPS): cv.ensure_list(SCHEMA_CT_CLAMP),
+            cv.Optional(CONF_VARIANT, default="vue2"): cv.one_of("vue2", "vue3", lower=True),
             cv.Optional(CONF_ON_UPDATE): automation.validate_automation(
                 {
                     cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(
@@ -178,6 +180,11 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
+
+    if config.get(CONF_VARIANT, "vue2") == "vue3":
+        cg.add_define("EMPORIA_VUE_VARIANT_VUE3")
+    else:
+        cg.add_define("EMPORIA_VUE_VARIANT_VUE2")
 
     phases = []
     for phase_config in config[CONF_PHASES]:
