@@ -5,6 +5,7 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 <details>
 <summary>Instructions changelog</summary>
 
+- 2025-11-24: update for main branch Vue 3 support
 - 2023-11-01: suggest setting `restore: false`
 - 2023-10-31: remove warning about flash, see https://github.com/emporia-vue-local/esphome/discussions/227#discussioncomment-7412125
 - 2023-09-11: reduce logging verbosity
@@ -23,9 +24,11 @@ For issues, please go to [the discussion board](https://github.com/emporia-vue-l
 
 </details>
 
-# Setting up Emporia Vue 2/3 with ESPHome
+# Setting up Emporia Vue with ESPHome
 
-**Got a Vue 3? [You can install ESPHome local control on it as well!](https://digiblur.com/2024/03/14/emporia-vue-gen3-esp32-esphome-home-assistant/)** Set `variant: vue3` in the `emporia_vue` sensor block when compiling for Gen 3 hardware.
+This project was initially designed for the Vue 2 and now has full support for the Vue 3 enabled as well.
+There are some significant differences in setup so please pay attention to your version in the instructions below.
+(No support is known for the [gen 1](https://github.com/emporia-vue-local/esphome/discussions/335) devices.)
 
 ![example of hass setup](https://i.imgur.com/hC26j2M.png)
 
