@@ -118,8 +118,25 @@ wifi:
   password: !secret wifi_password
 ```
 
-Most of this is fairly general ESPHome setup 
+Most of this is fairly general ESPHome setup. We're using [secrets](https://esphome.io/guides/yaml/#secrets-and-the-secretsyaml-file) for all the WiFi and API/OTA configuration, but you can hard-code if you prefer. Likewise you can change the `name` and/or `friendly_name` to ± whatever you want within the [allowed syntax](https://esphome.io/components/esphome/#configuration-variables) for each.
 
+There are a few specifics for this project we've added:
+
+* adding in the external `emporia_vue` component to activate the code in this repo
+* enabling the `time` component, needed for daily usage tracking (more below)
+* some custom logging and flash settings
+
+### Board setup (Vue 2)
+
+TODO
+
+### Board setup (Vue 3)
+
+TODO
+
+### Sensor setup (shared)
+
+TODO
 
 
 <details>
