@@ -128,11 +128,106 @@ There are a few specifics for this project we've added:
 
 ### Board setup (Vue 2)
 
-TODO
+The above common configuration needs some additional hardware items added in for the Vue 2 board:
+
+```
+api:
+  # … snip …
+
+  # (optional) add this to the shared API config above for buzzer features
+  services:
+    - service: play_rtttl
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda 'return song_str;'
+
+rtttl:
+  output: buzzer
+  on_finished_playback:
+    - logger.log: 'Song ended!'
+
+button:
+  - platform: template
+    name: "Two Beeps"
+    on_press:
+      - rtttl.play: "two short:d=4,o=5,b=100:16e6,16e6"
+
+light:
+  - platform: status_led
+    name: "D3_LED"
+    pin: 23
+    restore_mode: ALWAYS_ON
+    entity_category: config
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: false
+  frequency: 400kHz
+  timeout: 1ms
+  id: i2c_a
+```
+
+This enables the piezo buzzer and lights on the board, as well as setting up the I2C bus for communication with the current monitoring sensor.
+
 
 ### Board setup (Vue 3)
 
-TODO
+For the Vue 3 board, the following hardware configuration is needed instead:
+
+```
+wifi:
+  # … snip …
+
+  # add these to the WiFi section:
+  on_connect:
+    - light.turn_on: wifi_led
+  on_disconnect:
+    - light.turn_off: wifi_led
+
+light:
+  - platform: status_led
+    id: wifi_led
+    pin:
+      number: 2
+      ignore_strapping_warning: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: status_led
+    id: ethernet_led
+    pin: 4
+    restore_mode: ALWAYS_OFF
+
+i2c:
+  sda:
+    number: 5
+    ignore_strapping_warning: true
+  scl: 18
+  scan: false
+  frequency: 400kHz
+  timeout: 1ms
+  id: i2c_a
+```
+
+The main differences are that the I2C and LED lights use different pins on this board. And there is no built-in buzzer like the gen 2 had. There is also an Ethernet device available.
+
+**⚠️⚡ We do not recommend, and many jurisdictions may prohibit, running low voltage wiring (network cables) in/out of an electrical panel. Consult a local authority or qualified electrician! ⚡⚠️**
+
+WiFi is strongly recommended (and much better tested/supported) but the Ethernet hardware may also be supported by ESPHome at your own risk:
+
+```
+ethernet:
+  type: RTL8201
+  mdc_pin: GPIO32
+  mdio_pin: GPIO33
+  clk_mode: GPIO0_IN
+  on_connect:
+    - light.turn_on: ethernet_led
+  on_disconnect:
+    - light.turn_off: ethernet_led
+```
 
 ### Sensor setup (shared)
 
