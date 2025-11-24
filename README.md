@@ -58,7 +58,86 @@ For each clamp, you want to make a note of the following information:
 
 For the wiring harness, you'll want to make a note of which color cable matches which service main clamp (A, B, C).
 
-## Writing configuration
+## ESPHome configuration
+
+The configuration process is very similar but depending on your model (Vue 2 vs. Vue 3) some sections will be different.
+We will show the individual parts separately to explain what's in common and what's different but note that a complete
+worked example for each different platform is available below to show it all together.
+
+### General setup (shared)
+
+```
+esphome:
+  name: emporia-vue
+  friendly_name: Emporia Monitor
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    version: recommended
+
+external_components:
+  - source: github://emporia-vue-local/esphome@dev
+    components:
+      - emporia_vue
+
+# Enable Home Assistant API…
+api:
+  encryption:
+    key: !secret api_key
+
+# …and use HA for setting our RTC time locally
+time:
+  - platform: homeassistant
+
+# …and expose a (virtual) "switch" that HA can use to restart us
+switch:
+  - platform: restart
+    name: Restart
+
+# enable OTA updates after first flash
+ota:
+  platform: esphome
+  password: !secret ota_key
+
+# enable logging, with some customizations
+logger:
+  logs:
+    # by default, every reading will be printed to the UART, which is very slow
+    # This will disable printing the readings but keep other helpful messages
+    sensor: INFO
+
+preferences:
+  # this might be overly slow, but do avoid wearing out the flash lifespan with too frequent of writes!
+  # please also make sure `restore: false` is set on all `platform: total_daily_energy` sensors below.
+  flash_write_interval: "48h"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+```
+
+Most of this is fairly general ESPHome setup 
+
+
+
+<details>
+  <summary>Complete Vue 2 example</summary>
+
+  …TODO…
+</details>
+
+<details>
+  <summary>Complete Vue 3 example</summary>
+  …TODO…
+</details>
+
+
+
+
+
+
 
 Here's a starting point for a configuration, save it to `<yourfilename>.yaml` into project folder:
 
@@ -380,11 +459,12 @@ Do not use the `web_server` since it is not compatible with the `esp-idf` framew
 
 It's not too critical to get this right on the first try, because you can update the board over WiFi using [the ESPHome Dashboard](https://esphome.io/guides/getting_started_command_line.html#bonus-esphome-dashboard).
 
-## Backing up & flashing the Vue 2
+## Backing up & flashing
 
 **⚠️⚡ Do not power your Vue by mains when doing this flashing! It will not work & is deadly. Only connect your Vue to the mains with the enclosure closed. ⚡⚠️**
 
 Pry the lever on one of the jumper cables up using a pencil or a needle or some other sharp thing. If your cables don't have a lever, cut one end of the cable & strip it using scissors or a knife.
+
 ![prying the lever on the jumper cable](https://i.imgur.com/BZJGdKq.jpg)![separated cable](https://i.imgur.com/eOc29M7.jpg)
 You will then need to solder a serial header onto the programming port, so that it looks like this:
 
@@ -416,7 +496,7 @@ You'll see a bunch of errors like `Failed to read from sensor due to I2C error 3
 
 ## Panel installation, part 2
 
-Reassemble to Vue 2, and follow the instructions to plug everything in & started up!
+Reassemble your Vue, and follow the instructions to plug everything in & started up!
 
 ## Getting a GUI
 
