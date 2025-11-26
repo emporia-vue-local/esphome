@@ -433,20 +433,32 @@ sensor:
   - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_16} Daily Energy", filters: *throttle_time }
 ```
 
-[TODO catch more of this up]
-The flow is:
+There's a lot here, don't get overwhelmed! A lot of it is simply repeated 16x for each of the circuits. The general outline is:
+
+* per-circuit labels ([split out](https://esphome.io/guides/yaml/#substitutions) for convenience)
+* some shared filters (more on these later)
+* the core `emporia_vue` sensor configuration:
+  * starting with the per-phase A/B(/C) *voltage* monitoring [sometimes called L1/L2/L3 poles]
+  * followed by the per-phase A/B(/C) *current* sensing CTs  [again intended for the mains/poles into the panel]
+  * and then the 16x individual circuit CT sensors (really the same, only indented differently, as the per-phase ones)
+  * NOTE: all these subsensors update [every 240ms](https://github.com/emporia-vue-local/esphome/discussions/333)!
+* templates to prepare the readings for more efficient Home Assistant data collection:
+  * each of the current sensors live power reading copied into HA via a `throttle_avg` (5sec) filter
+  * each of the sensors integrated into a total daily energy reading via a 1m `throttle_time` (1min) filter
+  * also a `balance_power` template (which you can remove if not wanted) which subtracts the 16x individual from the A+B total [for comparison](https://github.com/emporia-vue-local/esphome/discussions/329)
+
+Note especially the `throttle_avg` we set up. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant. Similarly note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". These are needed for the Home Assistant energy system, which requires daily kWh numbers. These are (again optionally) processed through a customizable `throttle_time` filter so HA gets a reading every minute.
+
+Okay, so that's still a lot. The general flow is:
 
 ```
- raw readings  --> throttle power (5s)
-               \-> Daily integral (60s)
+(Emporia-local)     (Copied to Home Assistant)
+  raw readings  -->  smoothed power (5s)
+    (240ms)     \->  daily integral (60s)
+
+total = A + B
+balance = total - (1 + 2 + 3 + … + 16)
 ```
-
-Note the throttle_avg. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant.
-
-Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers
-
-
-
 
 <details>
   <summary>Complete Vue 2 example</summary>
