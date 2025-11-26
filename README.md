@@ -62,7 +62,164 @@ For the wiring harness, you'll want to make a note of which color cable matches 
 
 The configuration process is very similar but depending on your model (Vue 2 vs. Vue 3) some sections will be different.
 We will show the individual parts separately to explain what's in common and what's different but note that a complete
-worked example for each different platform is available below to show it all together.
+worked example for each different platform is available below to show it all together:
+
+<details>
+  <summary>Complete Vue 2 example</summary>
+
+```
+esphome:
+  name: emporia-vue2
+  friendly_name: Emporia Monitor (gen2 example)
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    version: recommended
+
+external_components:
+  - source: github://emporia-vue-local/esphome@dev
+    components:
+      - emporia_vue
+
+api:
+  encryption:
+    key: !secret api_key
+  services:
+    - service: play_rtttl
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda 'return song_str;'
+
+time:
+  - platform: homeassistant
+
+switch:
+  - platform: restart
+    name: Restart
+
+ota:
+  platform: esphome
+  password: !secret ota_key
+
+logger:
+  logs:
+    sensor: INFO
+
+preferences:
+  flash_write_interval: "48h"
+
+rtttl:
+  output: buzzer
+  on_finished_playback:
+    - logger.log: 'Song ended!'
+
+button:
+  - platform: template
+    name: "Two Beeps"
+    on_press:
+      - rtttl.play: "two short:d=4,o=5,b=100:16e6,16e6"
+
+light:
+  - platform: status_led
+    name: "D3_LED"
+    pin: 23
+    restore_mode: ALWAYS_ON
+    entity_category: config
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: false
+  frequency: 400kHz
+  timeout: 1ms
+  id: i2c_a
+```
+</details>
+
+---
+
+<details>
+  <summary>Complete Vue 3 example</summary>
+
+```
+esphome:
+  name: emporia-vue3
+  friendly_name: Emporia Monitor (gen3 example)
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  on_connect:
+    - light.turn_on: wifi_led
+  on_disconnect:
+    - light.turn_off: wifi_led
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    version: recommended
+
+external_components:
+  - source: github://emporia-vue-local/esphome@dev
+    components:
+      - emporia_vue
+
+api:
+  encryption:
+    key: !secret api_key
+
+time:
+  - platform: homeassistant
+
+switch:
+  - platform: restart
+    name: Restart
+
+ota:
+  platform: esphome
+  password: !secret ota_key
+
+logger:
+  logs:
+    sensor: INFO
+
+preferences:
+  flash_write_interval: "48h"
+
+light:
+  - platform: status_led
+    id: wifi_led
+    pin:
+      number: 2
+      ignore_strapping_warning: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+  - platform: status_led
+    id: ethernet_led
+    pin: 4
+    restore_mode: ALWAYS_OFF
+
+i2c:
+  sda:
+    number: 5
+    ignore_strapping_warning: true
+  scl: 18
+  scan: false
+  frequency: 400kHz
+  timeout: 1ms
+  id: i2c_a
+```
+</details>
+
 
 It's not too critical to get the entire configuration right on the first try, because you can usually update the board over Wi-Fi using [the ESPHome Dashboard](https://esphome.io/guides/getting_started_command_line.html#bonus-esphome-dashboard). You can even set up a [fallback Wi-Fi Access Point](https://esphome.io/components/wifi/#access-point-mode) if you're worried about getting your network settings right.
 
