@@ -60,9 +60,13 @@ For the wiring harness, you'll want to make a note of which color cable matches 
 
 ## ESPHome configuration
 
-The configuration process is very similar but depending on your model (Vue 2 vs. Vue 3) some sections will be different.
-We will show the individual parts separately to explain what's in common and what's different but note that a complete
-worked example for each different platform is available below to show it all together:
+The two models (Vue 2 vs. Vue 3) vary slightly in their configuration needs.
+Here are complete worked examples for each generation as a starting point.
+
+See the next section for details about all the pieces,
+including some notes on how to set up your own circuits.
+
+### YAML Files
 
 <details>
   <summary>Complete Vue 2 example</summary>
@@ -595,8 +599,13 @@ sensor:
 ```
 </details>
 
-
 It's not too critical to get the entire configuration right on the first try, because you can usually update the board over Wi-Fi using [the ESPHome Dashboard](https://esphome.io/guides/getting_started_command_line.html#bonus-esphome-dashboard). You can even set up a [fallback Wi-Fi Access Point](https://esphome.io/components/wifi/#access-point-mode) if you're worried about getting your network settings right.
+
+## Configuration details
+
+The configuration process is very similar but depending on your model (Vue 2 vs. Vue 3) some sections will be different.
+
+We've broken up these notes into basic things that are shared, sections that are different between the two generations, and the mostly-shared sensor customization.
 
 ### General setup (shared)
 
