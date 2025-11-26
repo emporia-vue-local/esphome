@@ -58,6 +58,52 @@ For each clamp, you want to make a note of the following information:
 
 For the wiring harness, you'll want to make a note of which color cable matches which service main clamp (A, B, C).
 
+## Backing up & flashing
+
+**⚠️⚡ Do not power your Vue by mains when doing this flashing! It will not work & is deadly. Only connect your Vue to the mains with the enclosure closed. ⚡⚠️**
+
+Pry the lever on one of the jumper cables up using a pencil or a needle or some other sharp thing. If your cables don't have a lever, cut one end of the cable & strip it using scissors or a knife.
+
+![prying the lever on the jumper cable](https://i.imgur.com/BZJGdKq.jpg)![separated cable](https://i.imgur.com/eOc29M7.jpg)
+You will then need to solder a serial header onto the programming port, so that it looks like this:
+
+![closeup of the debug header pinout](https://i.imgur.com/NetVsQo.jpeg)
+Plug the USB adapter in. Connect RX to RX, TX to TX, and GND to GND. Do not connect 5V or 3.3V at this time.
+
+Plug in the unmodified end of the cable we modified above into the IO0 pin of the Emporia Vue 2.
+
+Open a console window and test that `esptool.py version` works.
+
+![photo of connected jumpers](https://i.imgur.com/TmB5PPV.jpeg)
+Hold the modified end of the cable in IO0 to the metal shield on the ESP32. If you'd like, you can tape it down so that you have both hands free.
+
+While holding it in place, connect 5V on your UART adapter to the `VCC_5V0` pin on the board.
+
+If your TTL adapter has both the DTR and RTS pins exposed, you can let it automatically reboot the board and put the chip into flash mode when necessary. IO0 connects to DTR, and EN connects to RTS. In this case, you don't need to hold anything down.
+
+### Doing a backup
+
+With your other hand, run the following in the console: `esptool.py -b 921600 read_flash 0 0x800000 flash_contents.bin`. Successful completion of this step is _critical_ in case something goes wrong later. This file is necessary to restore the device to factory function.
+
+If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`. If you're using an Apple Silicon (M1, M2, etc) CPU and it stops working after a certain percentage every time, try using a different machine
+
+### Flashing new software
+
+With your other hand, kick off the upload process. If you're using the command-line, `esphome run <yourfilename>.yaml`, otherwise click the button in the GUI. This will take a few minutes and install the new software on the Vue 2!
+
+You'll see a bunch of errors like `Failed to read from sensor due to I2C error 3`, but that's fine, since they'll go away when it is installed into into the wall.
+
+## Panel installation, part 2
+
+Reassemble your Vue, and follow the instructions to plug everything in & started up!
+
+## Getting a GUI
+
+This project works best with Home Assistant. Follow these instructions to [connect the Vue 2 to Home Assistant](https://esphome.io/guides/getting_started_hassio.html#connecting-your-device-to-home-assistant).
+
+Once you connect the Vue to Home Assistant, you can [configure the Home Assistant energy monitor functionallity](https://my.home-assistant.io/redirect/config_energy), as well as a variety of automations.
+
+
 ## ESPHome configuration
 
 The two models (Vue 2 vs. Vue 3) vary slightly in their configuration needs.
@@ -1059,53 +1105,6 @@ sensor:
     power_id: solar_power
     accuracy_decimals: 0
 ```
-
-
-
-## Backing up & flashing
-
-**⚠️⚡ Do not power your Vue by mains when doing this flashing! It will not work & is deadly. Only connect your Vue to the mains with the enclosure closed. ⚡⚠️**
-
-Pry the lever on one of the jumper cables up using a pencil or a needle or some other sharp thing. If your cables don't have a lever, cut one end of the cable & strip it using scissors or a knife.
-
-![prying the lever on the jumper cable](https://i.imgur.com/BZJGdKq.jpg)![separated cable](https://i.imgur.com/eOc29M7.jpg)
-You will then need to solder a serial header onto the programming port, so that it looks like this:
-
-![closeup of the debug header pinout](https://i.imgur.com/NetVsQo.jpeg)
-Plug the USB adapter in. Connect RX to RX, TX to TX, and GND to GND. Do not connect 5V or 3.3V at this time.
-
-Plug in the unmodified end of the cable we modified above into the IO0 pin of the Emporia Vue 2.
-
-Open a console window and test that `esptool.py version` works.
-
-![photo of connected jumpers](https://i.imgur.com/TmB5PPV.jpeg)
-Hold the modified end of the cable in IO0 to the metal shield on the ESP32. If you'd like, you can tape it down so that you have both hands free.
-
-While holding it in place, connect 5V on your UART adapter to the `VCC_5V0` pin on the board.
-
-If your TTL adapter has both the DTR and RTS pins exposed, you can let it automatically reboot the board and put the chip into flash mode when necessary. IO0 connects to DTR, and EN connects to RTS. In this case, you don't need to hold anything down.
-
-### Doing a backup
-
-With your other hand, run the following in the console: `esptool.py -b 921600 read_flash 0 0x800000 flash_contents.bin`. Successful completion of this step is _critical_ in case something goes wrong later. This file is necessary to restore the device to factory function.
-
-If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`. If you're using an Apple Silicon (M1, M2, etc) CPU and it stops working after a certain percentage every time, try using a different machine
-
-### Flashing new software
-
-With your other hand, kick off the upload process. If you're using the command-line, `esphome run <yourfilename>.yaml`, otherwise click the button in the GUI. This will take a few minutes and install the new software on the Vue 2!
-
-You'll see a bunch of errors like `Failed to read from sensor due to I2C error 3`, but that's fine, since they'll go away when it is installed into into the wall.
-
-## Panel installation, part 2
-
-Reassemble your Vue, and follow the instructions to plug everything in & started up!
-
-## Getting a GUI
-
-This project works best with Home Assistant. Follow these instructions to [connect the Vue 2 to Home Assistant](https://esphome.io/guides/getting_started_hassio.html#connecting-your-device-to-home-assistant).
-
-Once you connect the Vue to Home Assistant, you can [configure the Home Assistant energy monitor functionallity](https://my.home-assistant.io/redirect/config_energy), as well as a variety of automations.
 
 ## FAQ
 
