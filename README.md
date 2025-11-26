@@ -233,12 +233,14 @@ ethernet:
 
 This is **only a starting point**. You'll need to tailor this to your own system using the information you've collected in Panel installation, part 1.
 
-We've broken out some [substitutions](https://esphome.io/components/substitutions/) for the repeated circuit names but note that you will still need to go to each circuit and make sure for each [TODO more explanation links for each?]:
+We've broken out some [substitutions](https://esphome.io/components/substitutions/) for the repeated circuit names but note that you will still need to go to each circuit within the `ct_clamps` section and make sure for each:
 
 * the `phase_id` is set to the correct leg of your panel for that circuit
+  * see [this explanation](https://github.com/emporia-vue-local/esphome/discussions/332#discussioncomment-12257818) 
 * you have the right either `*pos` or `*neg` filter depending on which direction the CT reads
-  * note that these filters truncate out noise in the opposite direction [TODO: solar, `*abs`, other discussion…]
-* if you want to adjust the reading, e.g. it is common to `multiply: 2` if you are monitoring half of a double-throw breaker
+  * note that the suggested filters also [truncate out noise](https://github.com/emporia-vue-local/esphome/discussions/354) that would lead to negative energy readings. for solar or other generation this may not be what you want!
+* if you want to adjust the reading, e.g. it is common to `multiply: 2` if you are monitoring half of a double-pole breaker
+  * compare [this alternative](https://github.com/emporia-vue-local/esphome/discussions/55#discussioncomment-5018829) wiring
 
 Make sure you use the correct `variant: vue2` or `variant: vue3` to your platform!
 
