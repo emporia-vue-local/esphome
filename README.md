@@ -68,7 +68,7 @@ For the wiring harness, you'll want to make a note of which color cable matches 
 
 At your option, if you don't mind setting up an account and sending some initial data, you could use the Emporia app to check your initial wiring and functionality. But you'll be disconnecting everything so recommend to place a label on each wire so you can hook them back up again afterwards.
 
-Otherwise you can go straight to flashing before you connect the Emporia itself once you have your wiring planned out.
+Otherwise, once you have your wiring planned out, you can go straight to flashing before you ever install the Emporia itself the first time.
 
 
 ## Backing up & flashing
