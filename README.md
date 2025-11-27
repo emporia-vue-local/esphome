@@ -138,7 +138,7 @@ Successful completion of this step is _critical_ in case something goes wrong la
 
 If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`. If you're using an Apple Silicon (M1, M2, etc) CPU and it stops working after a certain percentage every time, try using a different machine.
 
-Newer tool versions can do e.g. `esptool --port /dev/ttyFIXME read-flash 0 ALL vue-orig-backup.bin` and it should auto-detect the rest of the connection details. If you're having trouble make sure that the TX/RX lines are correct, that you are grounding the GPIO0 pin as you power it on, and that your serial dongle can provide enough 3.3V/5V power that the ESP32 needs.
+Newer tool versions can do e.g. `esptool --port /dev/ttyFIXME read-flash 0 ALL vue-orig-backup.bin` and it should auto-detect the rest of the connection details. If you're having trouble make sure that the TX/RX lines are correct, that you are grounding the GPIO0 pin before you provide DC voltage to the ESP32, and that your serial dongle can provide enough 3.3V/5V power that the ESP32 needs.
 
 ### Flashing new software
 
