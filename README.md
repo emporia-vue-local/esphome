@@ -111,7 +111,8 @@ If your TTL adapter has both the DTR and RTS pins exposed, you can let it automa
 There are five test point pads involved to flash the Vue 3:
   
 <img width="1189" height="1073" alt="312249045-c3efae89-b39d-4cb0-85d7-9e7808fb1f8d" src="https://github.com/user-attachments/assets/3dad430f-5f4e-4dbb-a8d0-f6c268b6f03b" />
-Image credit: [Cossid](https://github.com/emporia-vue-local/esphome/discussions/264)
+
+Image credit: [Cossid](https://github.com/emporia-vue-local/esphome/discussions/264) and see that thread for additional tips/instructions.
 
 Connect your USB serial's RX pin to the test point the board labels as RXD/TP3 (this is actually the ESP32's TXD0 pin)
 and your serial's TX pin to the test point the board labels TXD/TP4 (this is actually the ESP32's RXD0 pin).
