@@ -108,7 +108,7 @@ If your TTL adapter has both the DTR and RTS pins exposed, you can let it automa
 <details>
   <summary>Vue 3 hookup</summary>
 
-Dissambly is fairly straightforward. Remove all the screws from the bottom, and possibly loosen the SMA connector a bit.
+Disassembly is fairly straightforward. Remove all the screws from the bottom, and possibly loosen the SMA connector a bit.
 Then you should be able to pop the two halves of the plastic case open, carefully with a pry tool or similar.
 
 Once inside, there are five test point pads involved to flash the Vue 3:
