@@ -89,19 +89,40 @@ If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0
 
 ### Flashing new software
 
-With your other hand, kick off the upload process. If you're using the command-line, `esphome run <yourfilename>.yaml`, otherwise click the button in the GUI. This will take a few minutes and install the new software on the Vue 2!
+You can start with a basic ESPHome configuration. This will get your device up and running without worrying about all the detailed Emporia-specific configuration just yet:
 
-You'll see a bunch of errors like `Failed to read from sensor due to I2C error 3`, but that's fine, since they'll go away when it is installed into into the wall.
+```
+esphome:
+  name: emporia-vue
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    version: recommended
+
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  platform: esphome
+  password: !secret ota_key
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+```
+
+While the device is still in bootloader mode, kick off the upload process. If you're using the command-line, `esphome run <yourfilename>.yaml`, otherwise click the button in the GUI. This will take a few minutes and install a basic ESPHome "stub" on the Vue. Note that none of the status light(s) will be working at this time but it should still connect to WiFi. If ESPHome can connect to it and you see some basic startup logs, you should be ready to proceed without needing the serial wires and physical bootloader mode. You can push the real configuration later using the OTA update mechanism.
+
+You can also flash the full configuration file for your device (below) right away if you'd like. Note that in that case you'll see a bunch of errors like `Failed to read from sensor due to I2C error 3` while it's running from low power on your bunch but that's fine. They'll go away when it is installed into into the wall.
 
 ## Panel installation, part 2
 
+If the basic ESPHome install seems happy running from DC power, you should be ready to proceed without needing the serial wires and physical bootloader mode. You can push the real configuration later using the OTA update mechanism.
+
 Reassemble your Vue, and follow the instructions to plug everything in & started up!
-
-## Getting a GUI
-
-This project works best with Home Assistant. Follow these instructions to [connect the Vue 2 to Home Assistant](https://esphome.io/guides/getting_started_hassio.html#connecting-your-device-to-home-assistant).
-
-Once you connect the Vue to Home Assistant, you can [configure the Home Assistant energy monitor functionallity](https://my.home-assistant.io/redirect/config_energy), as well as a variety of automations.
 
 
 ## ESPHome configuration
@@ -646,6 +667,14 @@ sensor:
 </details>
 
 It's not too critical to get the entire configuration right on the first try, because you can usually update the board over Wi-Fi using [the ESPHome Dashboard](https://esphome.io/guides/getting_started_command_line.html#bonus-esphome-dashboard). You can even set up a [fallback Wi-Fi Access Point](https://esphome.io/components/wifi/#access-point-mode) if you're worried about getting your network settings right.
+
+
+## Getting a GUI
+
+This project works best with Home Assistant. Follow these instructions to [connect the Vue 2 to Home Assistant](https://esphome.io/guides/getting_started_hassio.html#connecting-your-device-to-home-assistant).
+
+Once you connect the Vue to Home Assistant, you can [configure the Home Assistant energy monitor functionallity](https://my.home-assistant.io/redirect/config_energy), as well as a variety of automations.
+
 
 ## Configuration details
 
