@@ -81,7 +81,7 @@ The process is essentially the same for both Vue 2 and Vue 3:
 2. Connect to its programming pins
 3. Activate ESP32 bootloader
 
-In practice the process looks fairly different inside the two generations of device, so we've split up the specific instructions.
+In practice the process looks fairly different inside the two generations of device, so we've split up the specific instructions:
 
 <details>
   <summary>Vue 2 hookup</summary>
