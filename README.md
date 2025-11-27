@@ -34,20 +34,28 @@ There are some significant differences in setup so please pay attention to your 
 
 ## What you need
 
-- USB to serial converter module
-  - I tested this with a cheap & generic CH340G adapter
-- 4 male-to-female jumper wires
-- 4 male pcb-mount headers
-- Soldering iron & accessories
-  - [some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering)
-- [esptool.py](https://github.com/espressif/esptool) ([windows instructions](https://cyberblogspot.com/how-to-install-esptool-on-windows-10/), [generic instructions](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html))
 - Working ESPHome installation [(see "Getting started")](https://esphome.io/)
+- the [esptool](https://github.com/espressif/esptool) utility ([windows instructions](https://cyberblogspot.com/how-to-install-esptool-on-windows-10/), [generic instructions](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html))
+- USB to serial converter module
+  - cheap & generic CH340G adapter should work
+
+And for Vue 2:
+
+- Soldering iron & accessories ([some recommendations here](https://www.reddit.com/r/AskElectronics/wiki/soldering))
+- 4 male-to-female jumper wires
+- 4 male PCB-mount headers
+- (alternately: <https://github.com/emporia-vue-local/esphome/discussions/53>)
+
+Or for Vue 3:
+
+- a so-called [BDM frame](https://old.reddit.com/r/homeassistant/comments/12rr0b5/3d_printed_pin_jigs_are_overrated/) is recommended (alternately: <https://github.com/emporia-vue-local/esphome/discussions/305>)
+- or you can carefully solder on jumper wires but note that the pads are fragile!
 
 ## Panel installation, part 1
 
-You'll want to install the clamps & wiring harness into your panel following the instructions at https://www.emporiaenergy.com/installation-guides. At this time, place a label on each wire using masking tape & a pen rather than connecting them to the energy monitor.
+You'll want to install the clamps & wiring harness into your panel following the instructions at https://www.emporiaenergy.com/installation-guides.
 
-Next, we need to figure out which circuits are on which phases, and in the case of multi-pole breakers, the multiplier. There should be a label like the following on your panel:
+You need to figure out which circuits are on which phases, and in the case of multi-pole breakers, the multiplier. There should be a label like the following on your panel:
 ![panel phase diagram](https://i.imgur.com/GkoaLzp.jpeg)
 For each clamp, you want to make a note of the following information:
 
@@ -58,10 +66,25 @@ For each clamp, you want to make a note of the following information:
 
 For the wiring harness, you'll want to make a note of which color cable matches which service main clamp (A, B, C).
 
+At your option, if you don't mind setting up an account and sending some initial data, you could use the Emporia app to check your initial wiring and functionality. But you'll be disconnecting everything so recommend to place a label on each wire so you can hook them back up again afterwards.
+
+Otherwise you can go straight to flashing before you connect the Emporia itself once you have your wiring planned out.
+
+
 ## Backing up & flashing
 
 **⚠️⚡ Do not power your Vue by mains when doing this flashing! It will not work & is deadly. Only connect your Vue to the mains with the enclosure closed. ⚡⚠️**
 
+The process is essentially the same for both Vue 2 and Vue 3:
+
+1. Open the (completely unplugged) device
+2. Connect to its programming pins
+3. Activate ESP32 bootloader
+
+In practice the process looks fairly different inside the two generations of device, so we've split up the specific instructions.
+
+<details>
+  <summary>Vue 2 hookup</summary>
 Pry the lever on one of the jumper cables up using a pencil or a needle or some other sharp thing. If your cables don't have a lever, cut one end of the cable & strip it using scissors or a knife.
 
 ![prying the lever on the jumper cable](https://i.imgur.com/BZJGdKq.jpg)![separated cable](https://i.imgur.com/eOc29M7.jpg)
@@ -80,12 +103,38 @@ Hold the modified end of the cable in IO0 to the metal shield on the ESP32. If y
 While holding it in place, connect 5V on your UART adapter to the `VCC_5V0` pin on the board.
 
 If your TTL adapter has both the DTR and RTS pins exposed, you can let it automatically reboot the board and put the chip into flash mode when necessary. IO0 connects to DTR, and EN connects to RTS. In this case, you don't need to hold anything down.
+</details>
+
+<details>
+  <summary>Vue 3 hookup</summary>
+
+There are five test point pads involved to flash the Vue 3:
+  
+<img width="1189" height="1073" alt="312249045-c3efae89-b39d-4cb0-85d7-9e7808fb1f8d" src="https://github.com/user-attachments/assets/3dad430f-5f4e-4dbb-a8d0-f6c268b6f03b" />
+Image credit: [Cossid](https://github.com/emporia-vue-local/esphome/discussions/264)
+
+Connect your USB serial's RX pin to the test point the board labels as RXD/TP3 (this is actually the ESP32's TXD0 pin)
+and your serial's TX pin to the test point the board labels TXD/TP4 (this is actually the ESP32's RXD0 pin).
+
+Connect the USB serial's GND to the board's GND/TP5. Now to enter bootloader mode you need to:
+
+* ground the plated through-hole "ring" (labelled IO0 in the picture, no label on the board itself) somehow
+* then power the ESP32 via the 3.3V test point (labelled in the picture, next to GND/TP5 on the board) with IO0 still grounded
+
+It is unclear if you can also use 5V power and signal levels as was apparently the case with the Vue 2?
+Probably safest to stick to a serial TTL adapter that can provide 3.3V on both the power and signal lines but ymmv.
+
+</details>
 
 ### Doing a backup
 
-With your other hand, run the following in the console: `esptool.py -b 921600 read_flash 0 0x800000 flash_contents.bin`. Successful completion of this step is _critical_ in case something goes wrong later. This file is necessary to restore the device to factory function.
+Once you're connected with the bootloader active, run the following in the console: `esptool.py -b 921600 read_flash 0 0x800000 flash_contents.bin`.
 
-If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`. If you're using an Apple Silicon (M1, M2, etc) CPU and it stops working after a certain percentage every time, try using a different machine
+Successful completion of this step is _critical_ in case something goes wrong later. This file is necessary to restore the device to factory function.
+
+If the above command fails, try again using `esptool.py -b 115200 read_flash 0 0x800000 flash_contents.bin`. If you're using an Apple Silicon (M1, M2, etc) CPU and it stops working after a certain percentage every time, try using a different machine.
+
+Newer tool versions can do e.g. `esptool --port /dev/ttyFIXME read-flash 0 ALL vue-orig-backup.bin` and it should auto-detect the rest of the connection details. If you're having trouble make sure that the TX/RX lines are correct, that you are grounding the GPIO0 pin as you power it on, and that your serial dongle can provide enough 3.3V/5V power that the ESP32 needs.
 
 ### Flashing new software
 
