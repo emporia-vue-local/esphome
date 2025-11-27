@@ -965,7 +965,7 @@ sensor:
     phases:
       - id: phase_a  # Verify that this specific phase/leg is connected to correct input wire color on device listed below
         input: BLACK # Vue device wire color
-        calibration: 0.01925 # 0.022 is used as the default as vue2 starting point; either may need adjusted to ensure accuracy
+        calibration: 0.022 # vue2 starting point. 0.01925 might be better for vue3. either may need adjusted to ensure accuracy!
         # To calculate new calibration value use the formula <in-use calibration value> * <accurate voltage> / <reporting voltage>
         voltage:
           name: "${leg_1} Voltage"
@@ -975,7 +975,7 @@ sensor:
           filters: [*throttle_avg, *pos]
       - id: phase_b  # see notes above
         input: RED
-        calibration: 0.01925
+        calibration: 0.022
         voltage:
           name: "${leg_2} Voltage"
           filters: [*throttle_avg, *pos]
