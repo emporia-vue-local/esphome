@@ -6,4 +6,4 @@ Unofficial ESPHome-based local control for your Emporia Vue energy monitor.
 
 See [the new website for installation instructions](https://emporia-vue-local.github.io/docs/tutorial/intro). Please leave any feedback or questions in the discussion section.
 
-The older README that was previously here [is still available](https://github.com/emporia-vue-local/esphome/blob/dev/README.md).
+The older README that was previously here [is still available](https://github.com/emporia-vue-local/esphome/blob/dev/README.old.md).
