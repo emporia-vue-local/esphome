@@ -169,7 +169,7 @@ CONFIG_SCHEMA = cv.All(
             ),
         },
     )
-    .extend(cv.polling_component_schema("0ms"))
+    .extend(cv.polling_component_schema("200ms"))
     .extend(i2c.i2c_device_schema(0x64)),
     cv.only_on_esp32,
 )
