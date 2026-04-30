@@ -196,6 +196,15 @@ sensor:
         phase_angle:
           name: "Phase B Phase Angle"
           filters: [*throttle_avg, *pos]
+    # Optional: define virtual phases for North American split-phase 120/240V setups.
+    # Virtual phases combine two physical legs and can be referenced by ct_clamps.phase_id.
+    # Virtual voltage is published as the sum of the two source leg voltages.
+    virtual_phases:
+      - id: phase_ab
+        combine: [phase_a, phase_b]
+        voltage:
+          name: "Phase AB Voltage"
+          filters: [*throttle_avg, *pos]
     ct_clamps:
       # Do not specify a name for any of the power sensors here, only an id. This leaves the power sensors internal to ESPHome.
       # Copy sensors will filter and then send power measurements to HA
@@ -215,14 +224,14 @@ sensor:
       - { phase_id: phase_b, input:  "2", power: { id:  cir2, filters: [ *pos ] } }
       - { phase_id: phase_a, input:  "3", power: { id:  cir3, filters: [ *pos ] } }
       - { phase_id: phase_a, input:  "4", power: { id:  cir4, filters: [ *pos ] } }
-      - { phase_id: phase_a, input:  "5", power: { id:  cir5, filters: [ *pos, multiply: 2 ] } }
-      - { phase_id: phase_a, input:  "6", power: { id:  cir6, filters: [ *pos, multiply: 2 ] } }
-      - { phase_id: phase_a, input:  "7", power: { id:  cir7, filters: [ *pos, multiply: 2 ] } }
+      - { phase_id: phase_ab, input:  "5", power: { id:  cir5, filters: [ *pos ] } }
+      - { phase_id: phase_ab, input:  "6", power: { id:  cir6, filters: [ *pos ] } }
+      - { phase_id: phase_ab, input:  "7", power: { id:  cir7, filters: [ *pos ] } }
       - { phase_id: phase_b, input:  "8", power: { id:  cir8, filters: [ *pos ] } }
       - { phase_id: phase_b, input:  "9", power: { id:  cir9, filters: [ *pos ] } }
       - { phase_id: phase_b, input: "10", power: { id: cir10, filters: [ *pos ] } }
-      - { phase_id: phase_a, input: "11", power: { id: cir11, filters: [ *pos, multiply: 2 ] } }
-      - { phase_id: phase_a, input: "12", power: { id: cir12, filters: [ *pos, multiply: 2 ] } }
+      - { phase_id: phase_ab, input: "11", power: { id: cir11, filters: [ *pos ] } }
+      - { phase_id: phase_ab, input: "12", power: { id: cir12, filters: [ *pos ] } }
       - { phase_id: phase_a, input: "13", power: { id: cir13, filters: [ *pos ] } }
       - { phase_id: phase_a, input: "14", power: { id: cir14, filters: [ *pos ] } }
       - { phase_id: phase_b, input: "15", power: { id: cir15, filters: [ *pos ] } }
@@ -322,6 +331,8 @@ You'll also want to update the `sensor` section of the configuration using the i
 Note the `throttle_avg`. This is optional, but since we get a reading every 240ms, it is helpful to average these readings together so that we don't need to store such dense, noisy, data in Home Assistant.
 
 Note the "Total Power", "Total Daily Energy", and "Circuit x Daily Energy". This is needed for the Home Assistant energy system, which requires daily kWh numbers.
+
+The `virtual_phases` feature is intended for North American split-phase (120/240V) use. It may not produce correct results on 3-phase services or other electrical topologies.
 
 To configure energy returned to the grid for NET metering ([more info here](https://www.nrel.gov/state-local-tribal/basics-net-metering.html)), you need to add the following configuration:
 

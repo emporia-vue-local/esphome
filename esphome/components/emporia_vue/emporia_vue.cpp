@@ -40,10 +40,16 @@ void EmporiaVueComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "    Calibration: %f", phase->get_calibration());
     LOG_SENSOR("    ", "Voltage", phase->get_voltage_sensor());
   }
+  for (auto *virtual_phase : this->virtual_phases_) {
+    ESP_LOGCONFIG(TAG, "  Virtual Phase");
+    ESP_LOGCONFIG(TAG, "    Source Wire A: %d", virtual_phase->get_phase_a()->get_input_wire());
+    ESP_LOGCONFIG(TAG, "    Source Wire B: %d", virtual_phase->get_phase_b()->get_input_wire());
+    LOG_SENSOR("    ", "Voltage", virtual_phase->get_voltage_sensor());
+  }
 
   for (auto *ct_clamp : this->ct_clamps_) {
     ESP_LOGCONFIG(TAG, "  CT Clamp");
-    ESP_LOGCONFIG(TAG, "    Phase Calibration: %f", ct_clamp->get_phase()->get_calibration());
+    ESP_LOGCONFIG(TAG, "    Phase Type: %s", ct_clamp->get_phase()->is_virtual() ? "virtual" : "physical");
     ESP_LOGCONFIG(TAG, "    CT Port Index: %d", ct_clamp->get_input_port());
     LOG_SENSOR("    ", "Power", ct_clamp->get_power_sensor());
     LOG_SENSOR("    ", "Current", ct_clamp->get_current_sensor());
@@ -81,6 +87,9 @@ void EmporiaVueComponent::update() {
   for (auto *phase : this->phases_) {
     phase->update_from_reading(sensor_reading);
   }
+  for (auto *virtual_phase : this->virtual_phases_) {
+    virtual_phase->update_from_reading(sensor_reading);
+  }
   for (auto *ct_clamp : this->ct_clamps_) {
     ct_clamp->update_from_reading(sensor_reading);
   }
@@ -100,8 +109,7 @@ static inline bool is_mains_port(CTInputPort port) {
 
 void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
   if (this->voltage_sensor_) {
-    float calibrated_voltage = sensor_reading.voltage[this->input_wire_] * this->calibration_;
-    this->voltage_sensor_->publish_state(calibrated_voltage);
+    this->voltage_sensor_->publish_state(this->extract_calibrated_voltage(sensor_reading));
   }
 
   uint16_t raw_frequency = sensor_reading.frequency;
@@ -119,7 +127,11 @@ void PhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
   }
 }
 
-int32_t PhaseConfig::extract_power_for_phase(const ReadingPowerEntry &power_entry) {
+float PhaseConfig::extract_calibrated_voltage(const SensorReading &sensor_reading) const {
+  return sensor_reading.voltage[this->input_wire_] * this->calibration_;
+}
+
+int32_t PhaseConfig::extract_power_for_phase(const ReadingPowerEntry &power_entry) const {
   switch (this->input_wire_) {
     case PhaseInputWire::BLACK:
       return power_entry.phase_black;
@@ -133,11 +145,31 @@ int32_t PhaseConfig::extract_power_for_phase(const ReadingPowerEntry &power_entr
   }
 }
 
+float PhaseConfig::get_calibrated_power(const ReadingPowerEntry &power_entry, float correction_factor) const {
+  return (this->extract_power_for_phase(power_entry) * this->calibration_) / correction_factor;
+}
+
+void VirtualPhaseConfig::update_from_reading(const SensorReading &sensor_reading) {
+  if (this->voltage_sensor_) {
+    float voltage = this->phase_a_->extract_calibrated_voltage(sensor_reading) +
+                    this->phase_b_->extract_calibrated_voltage(sensor_reading);
+    this->voltage_sensor_->publish_state(voltage);
+  }
+}
+
+int32_t VirtualPhaseConfig::extract_power_for_phase(const ReadingPowerEntry &power_entry) const {
+  return this->phase_a_->extract_power_for_phase(power_entry) - this->phase_b_->extract_power_for_phase(power_entry);
+}
+
+float VirtualPhaseConfig::get_calibrated_power(const ReadingPowerEntry &power_entry, float correction_factor) const {
+  return this->phase_a_->get_calibrated_power(power_entry, correction_factor) -
+         this->phase_b_->get_calibrated_power(power_entry, correction_factor);
+}
+
 void CTClampConfig::update_from_reading(const SensorReading &sensor_reading) {
   if (this->power_sensor_) {
     ReadingPowerEntry power_entry = sensor_reading.power[this->input_port_];
-    int32_t raw_power = this->phase_->extract_power_for_phase(power_entry);
-    float calibrated_power = this->get_calibrated_power(raw_power);
+    float calibrated_power = this->phase_->get_calibrated_power(power_entry, this->get_correction_factor());
     this->power_sensor_->publish_state(calibrated_power);
   }
   if (this->current_sensor_) {
@@ -153,12 +185,8 @@ void CTClampConfig::update_from_reading(const SensorReading &sensor_reading) {
   }
 }
 
-float CTClampConfig::get_calibrated_power(int32_t raw_power) const {
-  float calibration = this->phase_->get_calibration();
-
-  float correction_factor = (this->input_port_ < 3) ? 5.5 : 22;
-
-  return (raw_power * calibration) / correction_factor;
+float CTClampConfig::get_correction_factor() const {
+  return (this->input_port_ < 3) ? 5.5f : 22.0f;
 }
 
 }  // namespace emporia_vue
