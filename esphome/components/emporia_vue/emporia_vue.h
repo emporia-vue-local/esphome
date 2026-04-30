@@ -36,6 +36,8 @@ struct __attribute__((__packed__)) SensorReading {
 };
 
 class PhaseConfig;
+class VirtualPhaseConfig;
+class PhaseTargetConfig;
 class CTClampConfig;
 
 class EmporiaVueComponent : public PollingComponent, public i2c::I2CDevice {
@@ -45,6 +47,9 @@ class EmporiaVueComponent : public PollingComponent, public i2c::I2CDevice {
   float get_setup_priority() const override { return esphome::setup_priority::HARDWARE; }
 
   void set_phases(std::vector<PhaseConfig *> phases) { this->phases_ = std::move(phases); }
+  void set_virtual_phases(std::vector<VirtualPhaseConfig *> virtual_phases) {
+    this->virtual_phases_ = std::move(virtual_phases);
+  }
   void set_ct_clamps(std::vector<CTClampConfig *> ct_clamps) { this->ct_clamps_ = std::move(ct_clamps); }
 
   void update() override;
@@ -54,6 +59,7 @@ class EmporiaVueComponent : public PollingComponent, public i2c::I2CDevice {
  protected:
   uint8_t last_sequence_num_ = 0;
   std::vector<PhaseConfig *> phases_;
+  std::vector<VirtualPhaseConfig *> virtual_phases_;
   std::vector<CTClampConfig *> ct_clamps_;
   CallbackManager<void()> callback_;
 };
@@ -64,7 +70,15 @@ enum PhaseInputWire : uint8_t {
   BLUE = 2,
 };
 
-class PhaseConfig {
+class PhaseTargetConfig {
+ public:
+  virtual ~PhaseTargetConfig() = default;
+  virtual int32_t extract_power_for_phase(const ReadingPowerEntry &power_entry) const = 0;
+  virtual float get_calibrated_power(const ReadingPowerEntry &power_entry, float correction_factor) const = 0;
+  virtual bool is_virtual() const = 0;
+};
+
+class PhaseConfig : public PhaseTargetConfig {
  public:
   void set_input_wire(PhaseInputWire input_wire) { this->input_wire_ = input_wire; }
   PhaseInputWire get_input_wire() const { return this->input_wire_; }
@@ -78,8 +92,11 @@ class PhaseConfig {
   sensor::Sensor *get_phase_angle_sensor() const { return this->phase_angle_sensor_; }
 
   void update_from_reading(const SensorReading &sensor_reading);
+  float extract_calibrated_voltage(const SensorReading &sensor_reading) const;
 
-  int32_t extract_power_for_phase(const ReadingPowerEntry &power_entry);
+  int32_t extract_power_for_phase(const ReadingPowerEntry &power_entry) const override;
+  float get_calibrated_power(const ReadingPowerEntry &power_entry, float correction_factor) const override;
+  bool is_virtual() const override { return false; }
 
  protected:
   PhaseInputWire input_wire_;
@@ -87,6 +104,27 @@ class PhaseConfig {
   sensor::Sensor *voltage_sensor_{nullptr};
   sensor::Sensor *frequency_sensor_{nullptr};
   sensor::Sensor *phase_angle_sensor_{nullptr};
+};
+
+class VirtualPhaseConfig : public PhaseTargetConfig {
+ public:
+  void set_phase_a(PhaseConfig *phase_a) { this->phase_a_ = phase_a; }
+  const PhaseConfig *get_phase_a() const { return this->phase_a_; }
+  void set_phase_b(PhaseConfig *phase_b) { this->phase_b_ = phase_b; }
+  const PhaseConfig *get_phase_b() const { return this->phase_b_; }
+  void set_voltage_sensor(sensor::Sensor *voltage_sensor) { this->voltage_sensor_ = voltage_sensor; }
+  sensor::Sensor *get_voltage_sensor() const { return this->voltage_sensor_; }
+
+  void update_from_reading(const SensorReading &sensor_reading);
+
+  int32_t extract_power_for_phase(const ReadingPowerEntry &power_entry) const override;
+  float get_calibrated_power(const ReadingPowerEntry &power_entry, float correction_factor) const override;
+  bool is_virtual() const override { return true; }
+
+ protected:
+  PhaseConfig *phase_a_{nullptr};
+  PhaseConfig *phase_b_{nullptr};
+  sensor::Sensor *voltage_sensor_{nullptr};
 };
 
 enum CTInputPort : uint8_t {
@@ -119,8 +157,8 @@ enum CTInputPort : uint8_t {
 
 class CTClampConfig : public sensor::Sensor {
  public:
-  void set_phase(PhaseConfig *phase) { this->phase_ = phase; };
-  const PhaseConfig *get_phase() const { return this->phase_; }
+  void set_phase(PhaseTargetConfig *phase) { this->phase_ = phase; };
+  const PhaseTargetConfig *get_phase() const { return this->phase_; }
   void set_input_port(CTInputPort input_port) { this->input_port_ = input_port; };
   CTInputPort get_input_port() const { return this->input_port_; }
   void set_power_sensor(sensor::Sensor *power_sensor) { this->power_sensor_ = power_sensor; }
@@ -129,10 +167,10 @@ class CTClampConfig : public sensor::Sensor {
   sensor::Sensor *get_current_sensor() const { return this->current_sensor_; }
 
   void update_from_reading(const SensorReading &sensor_reading);
-  float get_calibrated_power(int32_t raw_power) const;
+  float get_correction_factor() const;
 
  protected:
-  PhaseConfig *phase_;
+  PhaseTargetConfig *phase_;
   CTInputPort input_port_;
   sensor::Sensor *power_sensor_{nullptr};
   sensor::Sensor *current_sensor_{nullptr};

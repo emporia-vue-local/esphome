@@ -28,6 +28,8 @@ CONF_CT_CLAMPS = "ct_clamps"
 CONF_PHASES = "phases"
 CONF_PHASE_ID = "phase_id"
 CONF_VARIANT = "variant"
+CONF_VIRTUAL_PHASES = "virtual_phases"
+CONF_COMBINE = "combine"
 
 CONF_ON_UPDATE = "on_update"
 
@@ -40,7 +42,9 @@ emporia_vue_ns = cg.esphome_ns.namespace("emporia_vue")
 EmporiaVueComponent = emporia_vue_ns.class_(
     "EmporiaVueComponent", cg.PollingComponent, i2c.I2CDevice
 )
-PhaseConfig = emporia_vue_ns.class_("PhaseConfig")
+PhaseTargetConfig = emporia_vue_ns.class_("PhaseTargetConfig")
+PhaseConfig = emporia_vue_ns.class_("PhaseConfig", PhaseTargetConfig)
+VirtualPhaseConfig = emporia_vue_ns.class_("VirtualPhaseConfig", PhaseTargetConfig)
 CTClampConfig = emporia_vue_ns.class_("CTClampConfig")
 
 # Trigger for after statistics sensors are updated
@@ -81,7 +85,7 @@ CT_INPUT = {
 
 SCHEMA_CT_CLAMP = {
     cv.GenerateID(): cv.declare_id(CTClampConfig),
-    cv.Required(CONF_PHASE_ID): cv.use_id(PhaseConfig),
+    cv.Required(CONF_PHASE_ID): cv.use_id(PhaseTargetConfig),
     cv.Required(CONF_INPUT): cv.enum(CT_INPUT),
     cv.Optional(CONF_POWER): sensor.sensor_schema(
         unit_of_measurement=UNIT_WATT,
@@ -153,11 +157,41 @@ def validate_phases(val):
     return base_validated
 
 
+def validate_virtual_phases(val):
+    base_validated = cv.Schema(
+        cv.ensure_list(
+            {
+                cv.Required(CONF_ID): cv.declare_id(VirtualPhaseConfig),
+                cv.Required(CONF_COMBINE): cv.All(
+                    cv.ensure_list(cv.use_id(PhaseConfig)),
+                    cv.Length(min=2, max=2),
+                ),
+                cv.Optional(CONF_VOLTAGE): sensor.sensor_schema(
+                    unit_of_measurement=UNIT_VOLT,
+                    device_class=DEVICE_CLASS_VOLTAGE,
+                    state_class=STATE_CLASS_MEASUREMENT,
+                    accuracy_decimals=1,
+                ),
+            }
+        )
+    )(val)
+
+    for i, phase in enumerate(base_validated):
+        if phase[CONF_COMBINE][0] == phase[CONF_COMBINE][1]:
+            raise cv.Invalid(
+                "Virtual phase combine entries must reference two distinct phase ids",
+                path=[i, CONF_COMBINE],
+            )
+
+    return base_validated
+
+
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(EmporiaVueComponent),
             cv.Required(CONF_PHASES): validate_phases,
+            cv.Optional(CONF_VIRTUAL_PHASES, default=[]): validate_virtual_phases,
             cv.Required(CONF_CT_CLAMPS): cv.ensure_list(SCHEMA_CT_CLAMP),
             cv.Optional(CONF_VARIANT, default="vue2"): cv.one_of("vue2", "vue3", lower=True),
             cv.Optional(CONF_ON_UPDATE): automation.validate_automation(
@@ -205,6 +239,23 @@ async def to_code(config):
 
         phases.append(phase_var)
     cg.add(var.set_phases(phases))
+
+    virtual_phases = []
+    for virtual_phase_config in config[CONF_VIRTUAL_PHASES]:
+        virtual_phase_var = cg.new_Pvariable(
+            virtual_phase_config[CONF_ID], VirtualPhaseConfig()
+        )
+        phase_a_var = await cg.get_variable(virtual_phase_config[CONF_COMBINE][0])
+        phase_b_var = await cg.get_variable(virtual_phase_config[CONF_COMBINE][1])
+        cg.add(virtual_phase_var.set_phase_a(phase_a_var))
+        cg.add(virtual_phase_var.set_phase_b(phase_b_var))
+
+        if CONF_VOLTAGE in virtual_phase_config:
+            voltage_sensor = await sensor.new_sensor(virtual_phase_config[CONF_VOLTAGE])
+            cg.add(virtual_phase_var.set_voltage_sensor(voltage_sensor))
+
+        virtual_phases.append(virtual_phase_var)
+    cg.add(var.set_virtual_phases(virtual_phases))
 
     ct_clamps = []
     for ct_config in config[CONF_CT_CLAMPS]:
